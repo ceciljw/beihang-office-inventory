@@ -1,0 +1,12 @@
+{
+  "name": "inventory-app",
+  "version": "1.1.0",
+  "description": "党政办物资库存工作台",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}
