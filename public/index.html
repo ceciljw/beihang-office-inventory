@@ -1,0 +1,2771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>党政办物资库存工作台</title>
+<style>
+  :root {
+    --primary: #1565c0;
+    --primary-light: #e3f2fd;
+    --primary-dark: #0d47a1;
+    --accent: #42a5f5;
+    --danger: #e53935;
+    --danger-bg: #ffebee;
+    --warning: #fb8c00;
+    --warning-bg: #fff3e0;
+    --success: #43a047;
+    --success-bg: #e8f5e9;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-hover: 0 4px 8px rgba(0,0,0,0.08), 0 12px 24px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  /* 旧tab样式已废弃，保留兼容 */
+  .tabs, .tab { display: none; }
+  
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 24px 20px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5px; }
+  .header .subtitle { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .btn:active { transform: translateY(0); }
+  .btn-white { background: white; color: var(--primary); }
+  .btn-outline { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
+  .btn-outline:hover { background: rgba(255,255,255,0.25); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; min-height: 32px; }
+  
+  /* Alert Banner */
+  .alert-banner {
+    background: var(--danger-bg);
+    border: 1px solid #ffcdd2;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #c62828;
+  }
+  .alert-banner svg { flex-shrink: 0; }
+  .alert-banner.hidden { display: none; }
+  
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: white;
+    padding: 6px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .tab {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .tab:hover { background: var(--primary-light); color: var(--primary); }
+  .tab.active { background: var(--primary); color: white; }
+  .tab .badge {
+    background: rgba(255,255,255,0.2);
+    color: inherit;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+  }
+  .tab.active .badge { background: rgba(255,255,255,0.3); }
+  
+  /* Module */
+  .module { display: none; }
+  .module.active { display: block; }
+  
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .card-title { font-size: 1.1rem; font-weight: 600; color: var(--text); }
+  .card-title svg { vertical-align: middle; margin-right: 8px; }
+  
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .stat-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+  .stat-value.danger { color: var(--danger); }
+  .stat-value.warning { color: var(--warning); }
+  .stat-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
+  
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th {
+    background: #f8fafc;
+    padding: 14px 16px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--border);
+  }
+  td { padding: 14px 16px; border-top: 1px solid var(--border); vertical-align: middle; text-align: center; }
+  tr { transition: background 0.15s; }
+  /* 斑马纹：白+浅灰 */
+  tr:nth-child(odd) { background: #ffffff; }
+  tr:nth-child(even) { background: #f5f6f8; }
+  tr:hover { background: #ebedf0; }
+  /* 低库存警示保持功能色 */
+  tr.low-stock { background: var(--danger-bg) !important; }
+  tr.low-stock:hover { background: #ffcdd2 !important; }
+  tr.low-stock td { border-top-color: #ffcdd2; }
+  tr.warning-stock { background: var(--warning-bg) !important; }
+  tr.warning-stock:hover { background: #ffe0b2 !important; }
+  tr.warning-stock td { border-top-color: #ffe0b2; }
+  .col-quantity { font-weight: 700; text-align: center; font-size: 1rem; }
+  .col-quantity.low { color: var(--danger); }
+  .col-quantity.warning { color: var(--warning); }
+  .col-quantity.ok { color: var(--success); }
+  .col-printer { font-size: 0.8rem; color: var(--text-secondary); max-width: 220px; text-align: center; }
+  .col-location { font-size: 0.85rem; color: var(--text-secondary); text-align: center; }
+  .col-actions { white-space: nowrap; text-align: center; }
+  .col-actions .btn { padding: 4px 10px; font-size: 0.75rem; min-height: 28px; }
+  .col-printer-group { max-width: 260px; text-align: left; }
+  
+  /* Drag Handle */
+  .drag-handle-cell { width: 36px; padding: 4px 6px; text-align: center; vertical-align: middle; }
+  .drag-handle {
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: grab; color: #c0c7cf; font-size: 18px; letter-spacing: -3px;
+    user-select: none; width: 24px; height: 24px; line-height: 1;
+    opacity: 0.25; transition: opacity 0.15s, color 0.15s;
+    border-radius: 4px;
+  }
+  .drag-handle:hover { opacity: 1; color: #6b7b8d; background: #e8ecf1; }
+  tr.dragging { opacity: 0.45; background: #e8edf2 !important; }
+  tr.drag-over td { border-top: 2px solid var(--primary) !important; }
+  
+  /* Quick Action Buttons */
+  .btn-group {
+    display: inline-flex;
+    border-radius: 6px;
+    overflow: hidden;
+    vertical-align: middle;
+  }
+  .btn-group .btn {
+    border-radius: 0;
+    padding: 4px 10px;
+    min-height: 28px;
+    font-size: 0.8rem;
+  }
+  .btn-group .btn:first-child { border-radius: 6px 0 0 6px; }
+  .btn-group .btn:last-child { border-radius: 0 6px 6px 0; }
+  .btn-icon {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .btn-add { background: var(--success); color: white; }
+  .btn-add:hover { background: #2e7d32; }
+  .btn-sub { background: var(--warning-bg); color: var(--warning); border: 1px solid #ffe0b2; }
+  .btn-sub:hover { background: #ffe0b2; }
+  
+  /* Tags */
+  .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: fit-content;
+    line-height: 1.4;
+  }
+  .tag-blue { background: var(--primary-light); color: var(--primary); }
+  .tag-green { background: var(--success-bg); color: var(--success); }
+  .tag-orange { background: var(--warning-bg); color: var(--warning); }
+  .tag-red { background: var(--danger-bg); color: var(--danger); }
+  .tag-gray { background: #f1f5f9; color: var(--text-secondary); }
+  .tag-purple { background: #f3e5f5; color: #7b1fa2; }
+  
+  /* Search & Filter Bar */
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box input:focus { border-color: var(--primary); }
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+  }
+  .filter-select {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    min-width: 140px;
+  }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-title { font-size: 1.1rem; font-weight: 600; }
+  .modal-close {
+    background: none; border: none; cursor: pointer; padding: 4px;
+    border-radius: 6px; color: var(--text-secondary);
+  }
+  .modal-close:hover { background: var(--bg); color: var(--text); }
+  .modal-body { padding: 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--primary); }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+  }
+  .empty-state svg { margin-bottom: 12px; }
+  
+  /* Alerts List */
+  .alerts-list { display: flex; flex-direction: column; gap: 12px; }
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--danger-bg);
+    border: 1px solid #ffcdd2;
+    border-radius: 10px;
+  }
+  .alert-item.warning-item { background: var(--warning-bg); border-color: #ffe0b2; }
+  .alert-icon { flex-shrink: 0; }
+  .alert-content { flex: 1; }
+  .alert-title { font-weight: 600; color: #c62828; }
+  .alert-item.warning-item .alert-title { color: #e65100; }
+  .alert-desc { font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px; }
+  .alert-action { flex-shrink: 0; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    .header { padding: 16px; }
+    .header h1 { font-size: 1.2rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .card { padding: 16px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-box { min-width: 100%; }
+    .tab { min-width: 100px; padding: 10px 14px; font-size: 0.85rem; }
+    th, td { padding: 10px 12px; font-size: 0.85rem; }
+    .col-printer { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .modal { max-height: 85vh; }
+  }
+  
+  /* Color dot */
+  .color-dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .color-black { background: #333; }
+  .color-red { background: #e53935; }
+  .color-yellow { background: #fdd835; }
+  .color-cyan { background: #00acc1; }
+  .color-blue { background: #1e88e5; }
+  .color-pink { background: #f06292; }
+  .color-gray { background: #9e9e9e; }
+
+  .type-row { display: flex; align-items: center; min-height: 28px; }
+  .type-row strong { font-weight: 600; }
+
+  /* Toner Color Grid */
+  .color-grid {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  }
+  .color-grid-2x2 {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 4px 16px;
+    align-items: center;
+    justify-content: start;
+  }
+  .color-item {
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .color-item .color-dot {
+    width: 18px; height: 18px; margin-right: 0;
+    border: 2px solid rgba(0,0,0,0.08);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .color-item .color-dot.color-low {
+    border-color: var(--danger); box-shadow: 0 0 0 2px rgba(229,57,53,0.2);
+  }
+  .color-qty {
+    font-weight: 700; font-size: 0.95rem; min-width: 20px; text-align: center;
+  }
+  .color-qty-low { color: var(--danger); }
+  .color-mini-btns {
+    display: inline-flex; gap: 2px; margin-left: 2px;
+    opacity: 0.6; transition: opacity 0.15s;
+  }
+  .color-item:hover .color-mini-btns { opacity: 1; }
+  .color-mini-btns .cmb {
+    width: 18px; height: 18px; line-height: 16px;
+    padding: 0; border: none; border-radius: 4px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    background: #e8f5e9; color: #2e7d32;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .color-mini-btns .cmb:hover { background: #2e7d32; color: white; }
+  .color-mini-btns .cmb-sub { background: #fff3e0; color: #ef6c00; }
+  .color-mini-btns .cmb-sub:hover { background: #ef6c00; color: white; }
+
+  /* Toner Group Row */
+  tr.toner-group-row td { border-top-width: 2px; }
+  tr.toner-group-row + tr.toner-group-row { border-top: none; }
+  tr.toner-group-row + tr.toner-group-row td { border-top: 1px dashed var(--border); padding-top: 8px; padding-bottom: 8px; }
+
+  /* Printer Tag */
+  .printer-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 0.7rem; font-weight: 600; margin-left: 8px;
+    vertical-align: middle; letter-spacing: 0.5px;
+  }
+  .printer-color { background: #f3e5f5; color: #7b1fa2; }
+  .printer-bw    { background: #e8eaf6; color: #283593; }
+  .col-printer-group { max-width: 260px; }
+  .col-printer-group strong { display: block; }
+
+  /* Remark column */
+  .col-remark { min-width: 100px; max-width: 180px; padding: 6px 8px; }
+  .remark-input {
+    width: 100%; padding: 6px 10px; border: 1px solid transparent;
+    border-radius: 6px; font-size: 0.82rem; background: transparent;
+    outline: none; text-align: center; transition: all 0.2s;
+    color: var(--text); font-family: inherit;
+  }
+  .remark-input:hover { border-color: #dde1e6; background: #fff; }
+  .remark-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 2px rgba(21,101,192,0.1); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    padding: 12px 20px;
+    background: var(--text);
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 2000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  
+  /* Confirm Dialog */
+  .confirm-dialog {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    max-width: 360px;
+  }
+  .confirm-dialog h3 { margin-bottom: 8px; }
+  .confirm-dialog p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px; }
+  .confirm-buttons { display: flex; gap: 8px; justify-content: center; }
+  
+  /* Location cards in dashboard */
+  .location-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .location-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: all 0.2s;
+  }
+  .location-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+  .location-name { font-weight: 600; font-size: 1rem; margin-bottom: 8px; }
+  .location-stats { display: flex; gap: 16px; font-size: 0.85rem; color: var(--text-secondary); }
+  .location-stat strong { color: var(--text); }
+
+  /* Sidebar Layout */
+  .app-layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 220px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-header h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sidebar-header .subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .sidebar-nav { padding: 12px 0; flex: 1; overflow-y: auto; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    margin: 2px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    width: calc(100% - 24px);
+    text-align: left;
+    position: relative;
+  }
+  .nav-item:hover { background: var(--primary-light); color: var(--primary); }
+  .nav-item.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -12px; top: 8px; bottom: 8px;
+    width: 4px;
+    background: var(--primary);
+    border-radius: 0 4px 4px 0;
+  }
+  .nav-item .badge {
+    margin-left: auto;
+    background: var(--bg);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .nav-item.active .badge { background: var(--primary); color: white; }
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+  .sidebar-footer .btn-manage-nav {
+    display: block; width: 100%; margin-top: 8px;
+    padding: 6px 12px; border: 1px dashed #dde1e6;
+    border-radius: 6px; background: transparent;
+    cursor: pointer; font-size: 0.78rem; color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .sidebar-footer .btn-manage-nav:hover {
+    border-color: var(--primary); color: var(--primary); background: var(--primary-light);
+  }
+
+  /* Nav Management Modal */
+  .nav-mgr-list { display: flex; flex-direction: column; gap: 6px; max-height: 420px; overflow-y: auto; }
+  .nav-mgr-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; background: #f8fafc;
+    border-radius: 8px; border: 1px solid var(--border);
+  }
+  .nav-mgr-item .nav-mgr-icon { font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0; }
+  .nav-mgr-item .nav-mgr-name { flex: 1; font-weight: 500; font-size: 0.9rem; }
+  .nav-mgr-item .nav-mgr-cat {
+    font-size: 0.75rem; color: var(--text-secondary);
+    background: #e8edf2; padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
+  }
+  .nav-mgr-item .nav-mgr-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .nav-mgr-item .btn-mgr {
+    padding: 4px 8px; font-size: 0.72rem; border: 1px solid var(--border);
+    border-radius: 4px; background: white; cursor: pointer;
+    color: var(--text-secondary); transition: all 0.15s;
+  }
+  .nav-mgr-item .btn-mgr:hover { background: #e8edf2; color: var(--text); }
+  .nav-mgr-item .btn-mgr.danger:hover { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+  .nav-mgr-item.locked { background: #f1f5f9; border-style: dashed; }
+  .nav-mgr-item.locked .nav-mgr-name { color: var(--text-secondary); }
+  .nav-mgr-add-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+  .nav-mgr-add-row input, .nav-mgr-add-row select {
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; outline: none;
+  }
+  .nav-mgr-add-row input:focus, .nav-mgr-add-row select:focus { border-color: var(--primary); }
+  .nav-mgr-add-row input { flex: 1; min-width: 100px; }
+  .nav-mgr-add-row select { width: 160px; }
+  .main-content {
+    margin-left: 220px;
+    flex: 1;
+    padding: 20px;
+    max-width: calc(100vw - 220px);
+    overflow-x: hidden;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .topbar-title { font-size: 1.25rem; font-weight: 600; }
+  .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  @media (max-width: 768px) {
+    .sidebar { width: 64px; }
+    .sidebar-header h1 span, .sidebar-header .subtitle, .nav-item span:not(.badge) { display: none; }
+    .nav-item { justify-content: center; padding: 12px; margin: 2px 6px; width: calc(100% - 12px); }
+    .nav-item.active::before { left: -6px; }
+    .main-content { margin-left: 64px; max-width: calc(100vw - 64px); padding: 12px; }
+    .topbar-title { font-size: 1rem; }
+  }
+
+  /* Login Screen */
+  .login-screen {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; padding: 20px;
+  }
+  .login-screen.hidden { display: none; }
+  .login-card {
+    background: white; border-radius: 16px;
+    padding: 40px 36px; max-width: 380px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .login-card h2 { text-align: center; font-size: 1.4rem; color: var(--primary); margin-bottom: 6px; }
+  .login-card .login-sub { text-align: center; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 28px; }
+  .login-card .login-icon { text-align: center; font-size: 2.5rem; margin-bottom: 12px; }
+  .login-card .form-group { margin-bottom: 16px; }
+  .login-card .form-label { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+  .login-card .form-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .login-card .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(21,101,192,0.1); }
+  .login-card .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+  .login-card .btn-login:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(21,101,192,0.3); }
+  .login-card .login-error { color: var(--danger); font-size: 0.85rem; text-align: center; margin-top: 12px; min-height: 20px; }
+  .login-card .login-hint { font-size: 0.78rem; color: var(--text-secondary); text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  /* User Management */
+  .user-mgr-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; background: #f8fafc;
+    border-radius: 8px; border: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+  .user-mgr-item .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--primary-light); color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 0.9rem; flex-shrink: 0;
+  }
+  .user-mgr-item .user-info { flex: 1; }
+  .user-mgr-item .user-name { font-weight: 500; font-size: 0.9rem; }
+  .user-mgr-item .user-role { font-size: 0.75rem; color: var(--text-secondary); }
+  .user-mgr-item .user-role.admin { color: var(--primary); font-weight: 500; }
+  .user-mgr-item .user-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  /* Sidebar user info */
+  .sidebar-user {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+  }
+  .sidebar-user-info { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .sidebar-user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--primary-light); color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 0.75rem; flex-shrink: 0;
+  }
+  .sidebar-user-name { font-weight: 500; color: var(--text); }
+  .sidebar-user-role { font-size: 0.7rem; color: var(--text-secondary); }
+  .btn-logout {
+    display: block; width: 100%; padding: 6px 12px;
+    border: 1px solid #fde0e0; border-radius: 6px;
+    background: var(--danger-bg); color: var(--danger);
+    cursor: pointer; font-size: 0.78rem; transition: all 0.2s;
+  }
+  .btn-logout:hover { background: var(--danger); color: white; border-color: var(--danger); }
+  .btn-user-mgr {
+    display: block; width: 100%; margin-top: 6px; padding: 6px 12px;
+    border: 1px dashed #dde1e6; border-radius: 6px; background: transparent;
+    cursor: pointer; font-size: 0.78rem; color: var(--text-secondary); transition: all 0.2s;
+  }
+  .btn-user-mgr:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .btn-pwd {
+    display: block; width: 100%; margin-top: 6px; padding: 6px 12px;
+    border: 1px solid #e2e8f0; border-radius: 6px;
+    background: transparent; color: var(--text-secondary);
+    cursor: pointer; font-size: 0.78rem; transition: all 0.2s;
+  }
+  .btn-pwd:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+</style>
+</head>
+<body>
+<!-- Login Screen -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-icon">📦</div>
+    <h2>党政办物资库存工作台</h2>
+    <div class="login-sub">请登录后使用</div>
+    <div class="form-group">
+      <label class="form-label">用户名</label>
+      <input type="text" class="form-input" id="loginUsername" placeholder="请输入用户名" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">密码</label>
+      <input type="password" class="form-input" id="loginPassword" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="btn-login" onclick="doLogin()">登 录</button>
+    <div class="login-hint">默认管理员账号: admin &nbsp; 密码: admin123</div>
+  </div>
+</div>
+
+<!-- User Management Modal -->
+<div class="modal-overlay" id="userMgrModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">👥 用户管理</div>
+      <button class="modal-close" onclick="closeUserMgr()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="userMgrBody">
+      <div id="userMgrList"></div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:8px">➕ 添加新用户</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <input type="text" class="form-input" id="newUserUsername" placeholder="用户名（登录用）">
+          <input type="text" class="form-input" id="newUserDisplayName" placeholder="显示名称（如：张三）">
+          <input type="password" class="form-input" id="newUserPassword" placeholder="密码">
+          <select class="form-input" id="newUserRole" style="cursor:pointer">
+            <option value="user">普通用户</option>
+            <option value="admin">管理员</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="addUser()">添加用户</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeUserMgr()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="pwdModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">🔑 修改密码</div>
+      <button class="modal-close" onclick="closePwdModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">原密码</label>
+        <input type="password" class="form-input" id="pwdOld" placeholder="请输入当前密码">
+      </div>
+      <div class="form-group">
+        <label class="form-label">新密码（至少4位）</label>
+        <input type="password" class="form-input" id="pwdNew" placeholder="请输入新密码">
+      </div>
+      <div class="form-group">
+        <label class="form-label">确认新密码</label>
+        <input type="password" class="form-input" id="pwdNew2" placeholder="再次输入新密码" onkeydown="if(event.key==='Enter')savePwd()">
+      </div>
+      <div class="login-error" id="pwdError" style="margin:4px 0 0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closePwdModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="savePwd()">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1><span>📦</span><span>党政办物资</span></h1>
+      <div class="subtitle">库存管理工作台</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <!-- Dynamically rendered by renderSidebar() -->
+    </nav>
+    <div class="sidebar-footer">
+      党政办综合科
+      <button class="btn-manage-nav" onclick="openNavMgr()">⚙️ 管理导航</button>
+      <button class="btn-manage-nav" id="btnUserMgr" style="display:none" onclick="openUserMgr()">👥 用户管理</button>
+    </div>
+    <div class="sidebar-user" id="sidebarUser" style="display:none">
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-avatar" id="sidebarUserAvatar">A</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebarUserName">用户</div>
+          <div class="sidebar-user-role" id="sidebarUserRole">普通用户</div>
+        </div>
+      </div>
+      <button class="btn-pwd" onclick="openPwdModal()">🔑 修改密码</button>
+      <button class="btn-logout" onclick="doLogout()">退出登录</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Module 1: Dashboard -->
+    <div id="dashboard" class="module active">
+      <div class="topbar">
+        <div class="topbar-title">📊 库存总览</div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary btn-sm" onclick="exportData()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            导出备份
+          </button>
+          <button class="btn btn-sm" style="background:#f1f5f9;color:var(--text);border:1px solid var(--border)" onclick="document.getElementById('importFile').click()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            导入
+          </button>
+          <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+          <button class="btn btn-sm" style="background:#f1f5f9;color:var(--text);border:1px solid var(--border)" onclick="showClearConfirm()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            清空
+          </button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="totalItems">0</div><div class="stat-label">物资总数</div></div>
+        <div class="stat-card"><div class="stat-value danger" id="lowStockCount">0</div><div class="stat-label">库存告急</div></div>
+        <div class="stat-card"><div class="stat-value warning" id="warningStockCount">0</div><div class="stat-label">库存偏少</div></div>
+        <div class="stat-card"><div class="stat-value" id="locationCount">0</div><div class="stat-label">库房数量</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            ⚠️ 库存预警
+          </div>
+        </div>
+        <div id="alertsContainer" class="alerts-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1565c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            库房分布
+          </div>
+        </div>
+        <div id="locationContainer" class="location-grid"></div>
+      </div>
+    </div>
+
+    <!-- Module 2: Furniture -->
+    <div id="furniture" class="module">
+      <div class="topbar">
+        <div class="topbar-title">🪑 家具管理</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('家具')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新增家具
+        </button>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="furnitureSearch" placeholder="搜索家具名称、位置..." oninput="renderFurniture()">
+          </div>
+          <select class="filter-select" id="furnitureFilter" onchange="renderFurniture()">
+            <option value="">全部位置</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:36px"></th><th>名称</th><th>品牌/规格</th><th>数量</th><th>存放位置</th><th>备注</th><th>操作</th></tr></thead>
+            <tbody id="furnitureTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 3: Toner -->
+    <div id="toner" class="module">
+      <div class="topbar">
+        <div class="topbar-title">🖨️ 硒鼓管理</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('硒鼓')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新增硒鼓
+        </button>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="tonerSearch" placeholder="搜索品牌、型号、打印机..." oninput="renderToner()">
+          </div>
+          <select class="filter-select" id="tonerFilter" onchange="renderToner()">
+            <option value="">全部类型</option>
+            <option value="硒鼓">硒鼓</option>
+            <option value="粉盒">粉盒</option>
+            <option value="废粉盒">废粉盒</option>
+            <option value="硒鼓架">硒鼓架</option>
+            <option value="黑色墨粉组件">墨粉组件</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th style="width:36px"></th><th>对应打印机</th><th>硒鼓型号</th><th>类型</th><th>颜色 / 库存</th><th>库房位置</th><th>备注</th><th>操作</th></tr>
+            </thead>
+            <tbody id="tonerTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 4: Paper -->
+    <div id="paper" class="module">
+      <div class="topbar">
+        <div class="topbar-title">📄 纸类管理</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('复印纸')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新增纸类
+        </button>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="paperSearch" placeholder="搜索名称、规格..." oninput="renderPaper()">
+          </div>
+          <select class="filter-select" id="paperFilter" onchange="renderPaper()">
+            <option value="">全部规格</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:36px"></th><th>名称</th><th>规格</th><th>品牌</th><th>剩余量</th><th>库房位置</th><th>备注</th><th>操作</th></tr></thead>
+            <tbody id="paperTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module 5: Others -->
+    <div id="others" class="module">
+      <div class="topbar">
+        <div class="topbar-title">📦 其他物资</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          新增物资
+        </button>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="othersSearch" placeholder="搜索名称、分类..." oninput="renderOthers()">
+          </div>
+          <select class="filter-select" id="othersFilter" onchange="renderOthers()">
+            <option value="">全部分类</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:36px"></th><th>名称</th><th>分类</th><th>规格</th><th>剩余量</th><th>库房位置</th><th>备注</th><th>操作</th></tr></thead>
+            <tbody id="othersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" id="modalContent">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">编辑物资</div>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Form generated by JS -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="saveItem()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nav Management Modal -->
+<div class="modal-overlay" id="navMgrModal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ 管理导航栏</div>
+      <button class="modal-close" onclick="closeNavMgr()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="navMgrBody">
+      <div class="nav-mgr-list" id="navMgrList"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:8px">➕ 新增导航项</div>
+        <div class="nav-mgr-add-row">
+          <input type="text" id="newNavIcon" placeholder="图标(emoji)" maxlength="4" style="width:70px;flex:none">
+          <input type="text" id="newNavName" placeholder="名称">
+          <input type="text" id="newNavCat" placeholder="分类(如:文具)">
+          <button class="btn btn-primary btn-sm" onclick="addNavItem()" style="flex:none">添加</button>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:6px">提示：分类名需与物资的"类目"字段一致，才能正确筛选显示</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="resetNavConfig()">恢复默认</button>
+      <button class="btn btn-primary btn-sm" onclick="closeNavMgr()">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- Clear Confirm -->
+<div class="modal-overlay" id="clearConfirm">
+  <div class="confirm-dialog">
+    <h3>⚠️ 确认清空？</h3>
+    <p>此操作将删除所有库存数据，无法撤销。<br>建议先导出备份！</p>
+    <div class="confirm-buttons">
+      <button class="btn btn-sm" onclick="closeClearConfirm()">取消</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAllData()">确认清空</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm -->
+<div class="modal-overlay" id="deleteConfirm">
+  <div class="confirm-dialog">
+    <h3>确认删除</h3>
+    <p id="deleteConfirmMsg">确认删除此物资？</p>
+    <div class="confirm-buttons">
+      <button class="btn btn-sm" onclick="closeDeleteConfirm()">否</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDelete()">是</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== Data ====================
+// Web 版本：内存缓存 + API 后台同步
+let appData = null;       // 物资数据缓存
+let appNavConfig = null;  // 导航配置缓存
+let currentUser = null;   // 当前登录用户
+let syncTimer = null;     // 同步定时器
+let refreshTimer = null;  // 自动刷新定时器
+
+// 后台同步：将数据发送到服务器（fire-and-forget）
+function syncData() {
+  if (!appData) return;
+  fetch('/api/items', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(appData)
+  }).catch(err => console.error('Sync error:', err));
+}
+
+function syncNavConfig() {
+  if (!appNavConfig) return;
+  fetch('/api/nav-config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(appNavConfig)
+  }).catch(err => console.error('Sync nav error:', err));
+}
+
+// 从服务器刷新数据（用于多用户同步）
+async function refreshFromServer() {
+  try {
+    const res = await fetch('/api/items');
+    if (res.ok) {
+      const newData = await res.json();
+      if (JSON.stringify(newData) !== JSON.stringify(appData)) {
+        appData = newData;
+        renderAll();
+      }
+    }
+  } catch(err) { console.error('Refresh error:', err); }
+}
+
+// 默认导航配置
+const defaultNavConfig = [
+  { id: 'dashboard', name: '库存总览', icon: '📊', category: null, locked: true },
+  { id: 'furniture', name: '家具管理', icon: '🪑', category: '家具', locked: false },
+  { id: 'toner', name: '硒鼓管理', icon: '🖨️', category: '硒鼓', locked: false },
+  { id: 'paper', name: '纸类管理', icon: '📄', category: '复印纸', locked: false },
+  { id: 'others', name: '其他物资', icon: '📦', category: '*', locked: true }
+];
+
+function getNavConfig() {
+  if (appNavConfig && Array.isArray(appNavConfig) && appNavConfig.length > 0) {
+    return appNavConfig;
+  }
+  return JSON.parse(JSON.stringify(defaultNavConfig));
+}
+
+function saveNavConfig(cfg) {
+  appNavConfig = cfg;
+  syncNavConfig();
+  renderSidebar();
+  ensureAllModules();
+  renderAll();
+}
+
+// ALL_CATEGORIES: 从导航配置中提取所有明确分类（非 null, 非 '*'）
+function getExplicitCategories() {
+  var cfg = getNavConfig();
+  return cfg.filter(function(n) { return n.category && n.category !== '*'; }).map(function(n) { return n.category; });
+}
+
+function renderSidebar() {
+  var cfg = getNavConfig();
+  var nav = document.getElementById('sidebarNav');
+  var currentTab = document.querySelector('.nav-item.active');
+  var currentId = currentTab ? currentTab.getAttribute('data-tab') : 'dashboard';
+  nav.innerHTML = cfg.map(function(item) {
+    var active = item.id === currentId ? ' active' : '';
+    return '<button class="nav-item' + active + '" data-tab="' + item.id + '" onclick="switchTab(\'' + item.id + '\')">'
+      + '<span class="nav-icon-em" style="font-size:1.1rem;width:22px;text-align:center">' + item.icon + '</span>'
+      + '<span>' + item.name + '</span>'
+      + '<span class="badge" id="badge_' + item.id + '">0</span>'
+      + '</button>';
+  }).join('');
+}
+
+// 确保动态模块 DOM 存在
+function ensureModule(id) {
+  if (document.getElementById(id)) return;
+  var item = getNavConfig().find(function(n) { return n.id === id; });
+  if (!item) return;
+  // 预定义模块已存在(HTML中)，只需处理自定义模块
+  if (['dashboard','furniture','toner','paper','others'].indexOf(id) >= 0) return;
+
+  var cat = item.category;
+  var moduleDiv = document.createElement('div');
+  moduleDiv.id = id;
+  moduleDiv.className = 'module';
+  moduleDiv.innerHTML =
+    '<div class="topbar">'
+    + '<div class="topbar-title">' + item.icon + ' ' + item.name + '</div>'
+    + '<button class="btn btn-primary btn-sm" onclick="openModal(\'' + (cat||'').replace(/'/g,"\\'") + '\')">'
+    + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+    + ' 新增' + item.name + '</button>'
+    + '</div>'
+    + '<div class="card">'
+    + '<div class="toolbar">'
+    + '<div class="search-box">'
+    + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+    + '<input type="text" id="search_' + id + '" placeholder="搜索..." oninput="renderDynamicModule(\'' + id + '\')">'
+    + '</div>'
+    + '</div>'
+    + '<div class="table-wrap">'
+    + '<table><thead><tr><th style="width:36px"></th><th>名称</th><th>品牌/规格</th><th>数量</th><th>存放位置</th><th>备注</th><th>操作</th></tr></thead>'
+    + '<tbody id="tbody_' + id + '"></tbody></table>'
+    + '</div></div>';
+  document.querySelector('.main-content').appendChild(moduleDiv);
+}
+
+function ensureAllModules() {
+  var cfg = getNavConfig();
+  cfg.forEach(function(item) { ensureModule(item.id); });
+}
+
+// 渲染自定义分类模块
+function renderDynamicModule(id) {
+  var item = getNavConfig().find(function(n) { return n.id === id; });
+  if (!item || !item.category || item.category === '*') return;
+  var cat = item.category;
+  var data = getItems();
+  var searchEl = document.getElementById('search_' + id);
+  var search = searchEl ? searchEl.value.toLowerCase() : '';
+
+  var items = data.filter(function(i) { return i.category === cat; }).sort(function(a,b) { return (a.sortOrder||0)-(b.sortOrder||0); });
+  if (search) {
+    items = items.filter(function(i) {
+      return (i.model||'').toLowerCase().indexOf(search) >= 0
+        || (i.brand||'').toLowerCase().indexOf(search) >= 0
+        || (i.type||'').toLowerCase().indexOf(search) >= 0
+        || (i.location||'').toLowerCase().indexOf(search) >= 0;
+    });
+  }
+
+  var tbody = document.getElementById('tbody_' + id);
+  if (!tbody) return;
+  tbody.innerHTML = items.map(function(item) {
+    var stockClass = item.quantity <= item.threshold ? (item.quantity === 0 ? 'low-stock' : 'warning-stock') : '';
+    var qtyClass = getStockClass(item.quantity, item.threshold);
+    return '<tr class="' + stockClass + '" draggable="true" data-id="' + item.id + '" data-cat="' + cat.replace(/"/g,'&quot;') + '">'
+      + '<td class="drag-handle-cell"><span class="drag-handle">⋮⋮</span></td>'
+      + '<td><strong>' + item.model + '</strong></td>'
+      + '<td>' + (item.brand||'-') + ' / ' + (item.type||'-') + '</td>'
+      + '<td class="col-quantity ' + qtyClass + '">' + item.quantity + '</td>'
+      + '<td class="col-location">' + (item.location||'-') + '</td>'
+      + '<td class="col-remark"><input class="remark-input" value="' + (item.remark||'').replace(/"/g,'&quot;') + '" placeholder="点击填写" onblur="saveRemark(' + item.id + ',this.value)"></td>'
+      + '<td class="col-actions" style="min-width:160px">'
+      + '<span class="btn-group">'
+      + '<button class="btn btn-icon btn-add" onclick="quickAdd(' + item.id + ')" title="补货">+</button>'
+      + '<button class="btn btn-icon btn-sub" onclick="quickRemove(' + item.id + ')" title="取货">-</button>'
+      + '</span>'
+      + '<button class="btn btn-sm btn-primary" onclick="editItem(' + item.id + ')">编辑</button>'
+      + '<button class="btn btn-sm btn-danger" onclick="deleteItem(' + item.id + ')">删除</button>'
+      + '</td></tr>';
+  }).join('');
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无' + item.name + '，点击右上角按钮添加</td></tr>';
+  }
+  // 重新绑定拖拽事件到动态表格
+  setupTableDrag('tbody_' + id);
+}
+
+// 为动态表格绑定拖拽
+function setupTableDrag(tbodyId) {
+  var tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  // remove old listeners by cloning (simple approach)
+  var newTbody = tbody.cloneNode(true);
+  tbody.parentNode.replaceChild(newTbody, tbody);
+  newTbody.addEventListener('dragstart', handleDragStart);
+  newTbody.addEventListener('dragover', handleDragOver);
+  newTbody.addEventListener('dragleave', handleDragLeave);
+  newTbody.addEventListener('drop', handleDrop);
+}
+
+// ==================== Nav Management ====================
+function openNavMgr() {
+  document.getElementById('navMgrModal').classList.add('active');
+  renderNavMgrList();
+}
+
+function closeNavMgr() {
+  document.getElementById('navMgrModal').classList.remove('active');
+}
+
+function renderNavMgrList() {
+  var cfg = getNavConfig();
+  var list = document.getElementById('navMgrList');
+  list.innerHTML = cfg.map(function(item, idx) {
+    var catLabel = item.category === null ? '总览' : (item.category === '*' ? '其他分类' : item.category);
+    var locked = item.locked;
+    return '<div class="nav-mgr-item' + (locked ? ' locked' : '') + '">'
+      + '<span class="nav-mgr-icon">' + item.icon + '</span>'
+      + '<span class="nav-mgr-name">' + item.name + '</span>'
+      + '<span class="nav-mgr-cat">' + catLabel + '</span>'
+      + '<div class="nav-mgr-actions">'
+      + (locked ? '' : '<button class="btn-mgr" onclick="renameNavItem(' + idx + ')" title="重命名">✏️</button>')
+      + (locked ? '' : '<button class="btn-mgr danger" onclick="deleteNavItem(' + idx + ')" title="删除">🗑️</button>')
+      + (!locked && idx > 0 ? '<button class="btn-mgr" onclick="moveNavItemUp(' + idx + ')" title="上移">⬆️</button>' : '')
+      + (!locked && idx < cfg.length - 1 ? '<button class="btn-mgr" onclick="moveNavItemDown(' + idx + ')" title="下移">⬇️</button>' : '')
+      + '</div></div>';
+  }).join('');
+}
+
+function addNavItem() {
+  var icon = document.getElementById('newNavIcon').value.trim();
+  var name = document.getElementById('newNavName').value.trim();
+  var cat = document.getElementById('newNavCat').value.trim();
+  if (!name) { showToast('请输入名称'); return; }
+  if (!cat) { showToast('请输入分类名'); return; }
+  if (!icon) { icon = '📋'; }
+
+  var cfg = getNavConfig();
+  // Check for duplicate id or category
+  var dupId = cfg.find(function(n) { return n.id === cat; });
+  if (dupId) { showToast('分类 "' + cat + '" 已存在导航项'); return; }
+  var dupCat = cfg.find(function(n) { return n.category === cat; });
+  if (dupCat) { showToast('分类 "' + cat + '" 已有对应导航'); return; }
+
+  cfg.push({ id: 'cat_' + cat.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '_'), name: name, icon: icon, category: cat, locked: false });
+  saveNavConfig(cfg);
+  document.getElementById('newNavIcon').value = '';
+  document.getElementById('newNavName').value = '';
+  document.getElementById('newNavCat').value = '';
+  renderNavMgrList();
+  showToast('导航项已添加');
+}
+
+function deleteNavItem(idx) {
+  var cfg = getNavConfig();
+  var item = cfg[idx];
+  if (!item || item.locked) return;
+  if (!confirm('确认删除导航"' + item.name + '"？\n对应物资数据不会丢失，仍在"其他物资"中显示。')) return;
+  cfg.splice(idx, 1);
+  // 移除对应的动态模块 DOM
+  var modEl = document.getElementById(item.id);
+  if (modEl && ['dashboard','furniture','toner','paper','others'].indexOf(item.id) < 0) {
+    modEl.remove();
+  }
+  saveNavConfig(cfg);
+  renderNavMgrList();
+  showToast('已删除');
+}
+
+function renameNavItem(idx) {
+  var cfg = getNavConfig();
+  var item = cfg[idx];
+  if (!item || item.locked) return;
+  var newName = prompt('重命名导航项', item.name);
+  if (newName && newName.trim()) {
+    item.name = newName.trim();
+    saveNavConfig(cfg);
+    renderNavMgrList();
+    // 更新模块标题
+    var modEl = document.getElementById(item.id);
+    if (modEl) {
+      var titleEl = modEl.querySelector('.topbar-title');
+      if (titleEl) titleEl.textContent = item.icon + ' ' + item.name;
+    }
+    showToast('已重命名');
+  }
+}
+
+function moveNavItemUp(idx) {
+  if (idx <= 0) return;
+  var cfg = getNavConfig();
+  if (cfg[idx].locked || cfg[idx-1].locked) { showToast('不能越过锁定的导航项'); return; }
+  var tmp = cfg[idx];
+  cfg[idx] = cfg[idx-1];
+  cfg[idx-1] = tmp;
+  saveNavConfig(cfg);
+  renderNavMgrList();
+}
+
+function moveNavItemDown(idx) {
+  var cfg = getNavConfig();
+  if (idx >= cfg.length - 1) return;
+  if (cfg[idx].locked || cfg[idx+1].locked) { showToast('不能越过锁定的导航项'); return; }
+  var tmp = cfg[idx];
+  cfg[idx] = cfg[idx+1];
+  cfg[idx+1] = tmp;
+  saveNavConfig(cfg);
+  renderNavMgrList();
+}
+
+function resetNavConfig() {
+  if (!confirm('确认恢复默认导航配置？\n自定义添加的导航项将被移除。')) return;
+  appNavConfig = JSON.parse(JSON.stringify(defaultNavConfig));
+  syncNavConfig();
+  // 清理自定义模块DOM
+  var mainContent = document.querySelector('.main-content');
+  if (mainContent) {
+    var dynMods = mainContent.querySelectorAll('.module');
+    dynMods.forEach(function(m) {
+      if (['dashboard','furniture','toner','paper','others'].indexOf(m.id) < 0) {
+        m.remove();
+      }
+    });
+  }
+  renderSidebar();
+  renderAll();
+  closeNavMgr();
+  showToast('导航已恢复默认');
+}
+let editingId = null;
+let currentCategory = '硒鼓';
+let currentTonerGroups = [];
+let editingGroupIdx = null;
+let pendingDeleteType = null; // 'item' | 'printerGroup'
+let pendingDeleteId = null;
+
+const defaultData = [
+  // 硒鼓数据 (库房：304)
+  {id:1, category:'硒鼓', brand:'惠普 莱盛 格之格', model:'80A CF280A', type:'硒鼓', color:'黑', quantity:2, location:'304', printerModel:'HP LaserJet Pro 400 M401/M425', threshold:3, sortOrder:1},
+  {id:2, category:'硒鼓', brand:'惠普 莱盛 格之格', model:'80A CF280A', type:'粉盒', color:'黑', quantity:7, location:'304', printerModel:'HP LaserJet Pro 400 M401/M425', threshold:3, sortOrder:2},
+  {id:3, category:'硒鼓', brand:'惠普-盈佳', model:'88A CC388A', type:'硒鼓', color:'黑', quantity:1, location:'304', printerModel:'HP LaserJet P1106/P1108/M1136/M1213nf', threshold:2, sortOrder:3},
+  {id:4, category:'硒鼓', brand:'格之格 惠普 默远（217彩打）', model:'202A/CF500/501/502/503A', type:'硒鼓', color:'红', quantity:3, location:'304', printerModel:'HP Color LaserJet Pro MFP 281fdw', threshold:3, sortOrder:4},
+  {id:5, category:'硒鼓', brand:'格之格 惠普 默远（217彩打）', model:'202A/CF500/501/502/503A', type:'硒鼓', color:'黄', quantity:2, location:'304', printerModel:'HP Color LaserJet Pro MFP 281fdw', threshold:3, sortOrder:5},
+  {id:6, category:'硒鼓', brand:'格之格 惠普 默远（217彩打）', model:'202A/CF500/501/502/503A', type:'硒鼓', color:'蓝', quantity:3, location:'304', printerModel:'HP Color LaserJet Pro MFP 281fdw', threshold:3, sortOrder:6},
+  {id:7, category:'硒鼓', brand:'格之格 惠普 默远（217彩打）', model:'202A/CF500/501/502/503A', type:'硒鼓', color:'黑', quantity:5, location:'304', printerModel:'HP Color LaserJet Pro MFP 281fdw', threshold:3, sortOrder:7},
+  {id:8, category:'硒鼓', brand:'惠普（277dw）', model:'201', type:'硒鼓', color:'红', quantity:3, location:'304', printerModel:'HP Color LaserJet Pro M277dw', threshold:3, sortOrder:8},
+  {id:9, category:'硒鼓', brand:'惠普（277dw）', model:'201', type:'硒鼓', color:'黄', quantity:3, location:'304', printerModel:'HP Color LaserJet Pro M277dw', threshold:3, sortOrder:9},
+  {id:10, category:'硒鼓', brand:'惠普（277dw）', model:'201', type:'硒鼓', color:'蓝', quantity:2, location:'304', printerModel:'HP Color LaserJet Pro M277dw', threshold:3, sortOrder:10},
+  {id:11, category:'硒鼓', brand:'惠普（277dw）', model:'201', type:'硒鼓', color:'黑', quantity:3, location:'304', printerModel:'HP Color LaserJet Pro M277dw', threshold:3, sortOrder:11},
+  {id:12, category:'硒鼓', brand:'惠普', model:'228', type:'硒鼓', color:'黑', quantity:1, location:'304', printerModel:'HP LaserJet Pro M403/M427', threshold:2, sortOrder:12},
+  {id:13, category:'硒鼓', brand:'格之格-惠普', model:'278', type:'硒鼓', color:'黑', quantity:0, location:'304', printerModel:'HP LaserJet Pro M404/M428', threshold:2, sortOrder:13},
+  {id:14, category:'硒鼓', brand:'东芝-欣彩（124彩打机）', model:'FC415', type:'硒鼓', color:'红', quantity:6, location:'304', printerModel:'Toshiba e-STUDIO 124/224', threshold:3, sortOrder:14},
+  {id:15, category:'硒鼓', brand:'东芝-欣彩（124彩打机）', model:'FC415', type:'硒鼓', color:'黄', quantity:7, location:'304', printerModel:'Toshiba e-STUDIO 124/224', threshold:3, sortOrder:15},
+  {id:16, category:'硒鼓', brand:'东芝-欣彩（124彩打机）', model:'FC415', type:'硒鼓', color:'蓝', quantity:5, location:'304', printerModel:'Toshiba e-STUDIO 124/224', threshold:3, sortOrder:16},
+  {id:17, category:'硒鼓', brand:'东芝-欣彩（124彩打机）', model:'FC415', type:'硒鼓', color:'黑', quantity:5, location:'304', printerModel:'Toshiba e-STUDIO 124/224', threshold:3, sortOrder:17},
+  {id:18, category:'硒鼓', brand:'东芝-欣彩（124彩打机）', model:'废粉盒FC30C', type:'废粉盒', color:'黑', quantity:2, location:'304', printerModel:'Toshiba e-STUDIO 124/224', threshold:2, sortOrder:18},
+  {id:19, category:'硒鼓', brand:'柯美（314彩打机）', model:'TN324', type:'硒鼓', color:'红', quantity:4, location:'304', printerModel:'Konica Minolta bizhub C308/C368', threshold:3, sortOrder:19},
+  {id:20, category:'硒鼓', brand:'柯美（314彩打机）', model:'TN324', type:'硒鼓', color:'黄', quantity:4, location:'304', printerModel:'Konica Minolta bizhub C308/C368', threshold:3, sortOrder:20},
+  {id:21, category:'硒鼓', brand:'柯美（314彩打机）', model:'TN324', type:'硒鼓', color:'蓝', quantity:5, location:'304', printerModel:'Konica Minolta bizhub C308/C368', threshold:3, sortOrder:21},
+  {id:22, category:'硒鼓', brand:'柯美（314彩打机）', model:'TN324', type:'硒鼓', color:'黑', quantity:7, location:'304', printerModel:'Konica Minolta bizhub C308/C368', threshold:3, sortOrder:22},
+  {id:23, category:'硒鼓', brand:'柯美（314彩打机）', model:'未指定', type:'废粉盒', color:'黑', quantity:0, location:'304', printerModel:'Konica Minolta bizhub C308/C368', threshold:1, sortOrder:23},
+  {id:24, category:'硒鼓', brand:'格之格默远', model:'TN2215', type:'粉盒', color:'黑', quantity:4, location:'304', printerModel:'Brother HL-2240/2250DN/DCP-7060D', threshold:3, sortOrder:24},
+  {id:25, category:'硒鼓', brand:'brother 默远', model:'2250', type:'硒鼓架', color:'黑', quantity:4, location:'304', printerModel:'Brother HL-2240/2250DN/DCP-7060D', threshold:3, sortOrder:25},
+  {id:26, category:'硒鼓', brand:'京瓷', model:'TK5223', type:'黑色墨粉组件', color:'黑', quantity:0, location:'304', printerModel:'Kyocera ECOSYS P5021cdn/P5021cdw', threshold:1, sortOrder:26},
+  {id:27, category:'硒鼓', brand:'默远', model:'TN289', type:'硒鼓', color:'黑', quantity:1, location:'304', printerModel:'Brother HL-3150CDN/3170CDW', threshold:2, sortOrder:27},
+  {id:28, category:'硒鼓', brand:'默远', model:'TN289', type:'硒鼓', color:'黄', quantity:2, location:'304', printerModel:'Brother HL-3150CDN/3170CDW', threshold:2, sortOrder:28},
+  {id:29, category:'硒鼓', brand:'默远', model:'TN289', type:'硒鼓', color:'红', quantity:2, location:'304', printerModel:'Brother HL-3150CDN/3170CDW', threshold:2, sortOrder:29},
+  
+  // 复印纸 (库房：102)
+  {id:30, category:'复印纸', brand:'得力', model:'A4复印纸（70g）', type:'复印纸', color:'白', quantity:15, location:'102', printerModel:'-', threshold:5, sortOrder:1},
+  {id:31, category:'复印纸', brand:'得力', model:'A4复印纸（80g）', type:'复印纸', color:'白', quantity:8, location:'102', printerModel:'-', threshold:3, sortOrder:2},
+  {id:32, category:'复印纸', brand:'晨光', model:'A3复印纸', type:'复印纸', color:'白', quantity:3, location:'102', printerModel:'-', threshold:2, sortOrder:3},
+  {id:33, category:'复印纸', brand:'得力', model:'彩色复印纸（粉色）', type:'复印纸', color:'粉', quantity:2, location:'102', printerModel:'-', threshold:2, sortOrder:4},
+  {id:34, category:'复印纸', brand:'得力', model:'彩色复印纸（蓝色）', type:'复印纸', color:'蓝', quantity:2, location:'102', printerModel:'-', threshold:2, sortOrder:5},
+  
+  // 纸巾 (库房：102)
+  {id:35, category:'纸巾', brand:'心相印', model:'湿巾纸', type:'纸巾', color:'-', quantity:20, location:'102', printerModel:'-', threshold:5, sortOrder:1},
+  {id:36, category:'纸巾', brand:'维达', model:'抽纸', type:'纸巾', color:'-', quantity:50, location:'102', printerModel:'-', threshold:10, sortOrder:2},
+  {id:37, category:'纸巾', brand:'清风', model:'硬盒抽纸', type:'纸巾', color:'-', quantity:30, location:'102', printerModel:'-', threshold:10, sortOrder:3},
+  {id:38, category:'纸巾', brand:'心相印', model:'小包纸巾', type:'纸巾', color:'-', quantity:80, location:'102', printerModel:'-', threshold:20, sortOrder:4},
+  
+  // 家具 (示例数据，库房按需修改)
+  {id:39, category:'家具', brand:'得力', model:'办公椅', type:'转椅', color:'-', quantity:6, location:'304', printerModel:'-', threshold:2, sortOrder:1},
+  {id:40, category:'家具', brand:'震旦', model:'办公桌', type:'1.2m单人桌', color:'-', quantity:4, location:'304', printerModel:'-', threshold:1, sortOrder:2},
+  {id:41, category:'家具', brand:'宜家', model:'文件柜', type:'三层铁皮柜', color:'-', quantity:3, location:'102', printerModel:'-', threshold:1, sortOrder:3}
+];
+
+function getData() {
+  return appData || [];
+}
+
+// 排序辅助：按类别取数据并排好序
+function getSortedByCategory(data, cat) {
+  return data.filter(i => i.category === cat).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+}
+
+// ==================== Drag & Drop ====================
+var dragSrcRow = null;
+
+function setupDragDrop() {
+  ['furnitureTable', 'paperTable', 'othersTable', 'tonerTable'].forEach(function(id) {
+    var tbody = document.getElementById(id);
+    if (!tbody) return;
+    tbody.addEventListener('dragstart', handleDragStart);
+    tbody.addEventListener('dragover', handleDragOver);
+    tbody.addEventListener('dragleave', handleDragLeave);
+    tbody.addEventListener('drop', handleDrop);
+  });
+}
+
+function handleDragStart(e) {
+  var tr = e.target.closest('tr');
+  if (!tr) return;
+  dragSrcRow = tr;
+  tr.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', '');
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  var tr = e.target.closest('tr');
+  if (!tr || tr === dragSrcRow) return;
+  var tbody = tr.parentElement;
+  [].forEach.call(tbody.querySelectorAll('tr.drag-over'), function(r) { r.classList.remove('drag-over'); });
+  tr.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  var tr = e.target.closest('tr');
+  if (tr) tr.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  var tr = e.target.closest('tr');
+  if (!tr || !dragSrcRow || tr === dragSrcRow) {
+    if (dragSrcRow) dragSrcRow.classList.remove('dragging');
+    dragSrcRow = null;
+    return;
+  }
+  dragSrcRow.classList.remove('dragging');
+  tr.classList.remove('drag-over');
+  var tbodyId = tr.parentElement.id;
+  if (tbodyId === 'tonerTable') {
+    var srcIdx = parseInt(dragSrcRow.getAttribute('data-group-idx'));
+    var dstIdx = parseInt(tr.getAttribute('data-group-idx'));
+    if (!isNaN(srcIdx) && !isNaN(dstIdx) && srcIdx !== dstIdx) {
+      reorderTonerGroups(srcIdx, dstIdx);
+    }
+  } else {
+    var srcId = parseInt(dragSrcRow.getAttribute('data-id'));
+    var dstId = parseInt(tr.getAttribute('data-id'));
+    var srcCat = dragSrcRow.getAttribute('data-cat');
+    if (!isNaN(srcId) && !isNaN(dstId) && srcId !== dstId) {
+      reorderItems(srcId, dstId, srcCat);
+    }
+  }
+  dragSrcRow = null;
+}
+
+function reorderItems(srcId, dstId, cat) {
+  var data = getData();
+  var catItems = data.filter(function(i) { return i.category === cat; }).sort(function(a, b) { return (a.sortOrder || 0) - (b.sortOrder || 0); });
+  var srcIdx = catItems.findIndex(function(i) { return i.id === srcId; });
+  var dstIdx = catItems.findIndex(function(i) { return i.id === dstId; });
+  if (srcIdx < 0 || dstIdx < 0 || srcIdx === dstIdx) return;
+  var moved = catItems.splice(srcIdx, 1)[0];
+  catItems.splice(dstIdx, 0, moved);
+  catItems.forEach(function(item, idx) {
+    var found = data.find(function(d) { return d.id === item.id; });
+    if (found) found.sortOrder = idx + 1;
+  });
+  appData = data;
+  syncData();
+  rerenderByCategory(cat);
+  showToast('已移动');
+}
+
+function reorderTonerGroups(srcIdx, dstIdx) {
+  if (srcIdx === dstIdx) return;
+  var groups = currentTonerGroups;
+  var moved = groups.splice(srcIdx, 1)[0];
+  groups.splice(dstIdx, 0, moved);
+  var data = getData();
+  var order = 1;
+  groups.forEach(function(group) {
+    group.entries.forEach(function(item) {
+      var found = data.find(function(d) { return d.id === item.id; });
+      if (found) found.sortOrder = order++;
+    });
+  });
+  appData = data;
+  syncData();
+  rerenderByCategory('硒鼓');
+  showToast('已移动');
+}
+
+function rerenderByCategory(cat) {
+  if (cat === '家具')      { renderFurniture(); updateBadges(getData()); }
+  else if (cat === '复印纸') { renderPaper(); updateBadges(getData()); }
+  else if (cat === '纸巾')   { renderOthers(); updateBadges(getData()); }
+  else if (cat === '硒鼓')   { renderToner(); updateBadges(getData()); }
+  else {
+    // 检查是否为自定义分类模块
+    var cfg = getNavConfig();
+    var navItem = cfg.find(function(n) { return n.category === cat; });
+    if (navItem && ['dashboard','furniture','toner','paper','others'].indexOf(navItem.id) < 0) {
+      ensureModule(navItem.id);
+      renderDynamicModule(navItem.id);
+      updateBadges(getData());
+    } else {
+      renderOthers(); updateBadges(getData());
+    }
+  }
+}
+
+function saveData(data) {
+  appData = data;
+  syncData();
+  renderAll();
+}
+
+function saveRemark(id, value) {
+  const data = getData();
+  const item = data.find(i => i.id === id);
+  if (!item) return;
+  item.remark = value;
+  syncData();
+}
+
+function getItems() {
+  return getData();
+}
+
+// ==================== Render ====================
+function renderAll() {
+  var data = getItems();
+  renderDashboard(data);
+  renderFurniture();
+  renderToner();
+  renderPaper();
+  renderOthers();
+  // 渲染所有自定义模块
+  var cfg = getNavConfig();
+  cfg.forEach(function(item) {
+    if (['dashboard','furniture','toner','paper','others'].indexOf(item.id) < 0 && item.category && item.category !== '*') {
+      ensureModule(item.id);
+      renderDynamicModule(item.id);
+    }
+  });
+  updateBadges(data);
+}
+
+function updateBadges(data) {
+  var cfg = getNavConfig();
+  var explicitCats = getExplicitCategories();
+  var others = data.filter(function(i) { return explicitCats.indexOf(i.category) < 0; });
+
+  cfg.forEach(function(item) {
+    var badge = document.getElementById('badge_' + item.id);
+    if (!badge) return;
+    if (item.category === null) {
+      // dashboard - show all alerts
+      var lowStock = data.filter(function(i) { return i.quantity <= i.threshold && i.quantity > 0; });
+      var zeroStock = data.filter(function(i) { return i.quantity === 0; });
+      badge.textContent = lowStock.length + zeroStock.length;
+    } else if (item.category === '*') {
+      badge.textContent = others.length;
+    } else {
+      var count = data.filter(function(i) { return i.category === item.category; }).length;
+      badge.textContent = count;
+    }
+  });
+  // Also update old badge IDs for backward compat
+  var toner = data.filter(function(i) { return i.category === '硒鼓'; });
+  var paper = data.filter(function(i) { return i.category === '复印纸'; });
+  var furniture = data.filter(function(i) { return i.category === '家具'; });
+  var alertBadge = document.getElementById('alertBadge');
+  if (alertBadge) {
+    var lowStock = data.filter(function(i) { return i.quantity <= i.threshold && i.quantity > 0; });
+    var zeroStock = data.filter(function(i) { return i.quantity === 0; });
+    alertBadge.textContent = lowStock.length + zeroStock.length;
+  }
+  var fb = document.getElementById('furnitureBadge'); if (fb) fb.textContent = furniture.length;
+  var tb = document.getElementById('tonerBadge'); if (tb) tb.textContent = toner.length;
+  var pb = document.getElementById('paperBadge'); if (pb) pb.textContent = paper.length;
+  var ob = document.getElementById('othersBadge'); if (ob) ob.textContent = others.length;
+}
+
+function renderDashboard(data) {
+  const totalItems = data.length;
+  const lowStock = data.filter(i => i.quantity === 0);
+  const warningStock = data.filter(i => i.quantity > 0 && i.quantity <= i.threshold);
+  const locations = [...new Set(data.map(i => i.location).filter(l => l && l !== '未指定'))];
+  
+  document.getElementById('totalItems').textContent = totalItems;
+  document.getElementById('lowStockCount').textContent = lowStock.length;
+  document.getElementById('warningStockCount').textContent = warningStock.length;
+  document.getElementById('locationCount').textContent = locations.length;
+  
+  // Alerts
+  const alerts = [...lowStock, ...warningStock];
+  const alertsContainer = document.getElementById('alertsContainer');
+  if (alerts.length === 0) {
+    alertsContainer.innerHTML = '<div class="empty-state">✅ 所有物资库存充足，暂无预警</div>';
+  } else {
+    alertsContainer.innerHTML = alerts.map(item => {
+      const isZero = item.quantity === 0;
+      return `
+        <div class="alert-item ${isZero ? '' : 'warning-item'}">
+          <div class="alert-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${isZero ? '#e53935' : '#fb8c00'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="alert-content">
+            <div class="alert-title">${item.brand} ${item.model} ${item.color !== '-' ? item.color + '色' : ''} — ${isZero ? '库存为0' : '剩余 ' + item.quantity + ' 个'}</div>
+            <div class="alert-desc">类型：${item.type} | 库房：${item.location} ${item.printerModel && item.printerModel !== '-' ? '| 打印机：' + item.printerModel : ''}</div>
+          </div>
+          <div class="alert-action">
+            <span class="btn-group">
+              <button class="btn btn-sm ${isZero ? 'btn-danger' : 'btn-primary'}" onclick="quickAdd(${item.id})">补货 +1</button>
+              <button class="btn btn-sm btn-sub" onclick="quickRemove(${item.id})">取货 -1</button>
+            </span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  // Locations
+  const locationContainer = document.getElementById('locationContainer');
+  const locStats = locations.map(loc => {
+    const items = data.filter(i => i.location === loc);
+    const total = items.length;
+    const low = items.filter(i => i.quantity <= i.threshold).length;
+    return {loc, total, low};
+  }).sort((a,b) => b.total - a.total);
+  
+  locationContainer.innerHTML = locStats.map(({loc, total, low}) => `
+    <div class="location-card">
+      <div class="location-name">📍 ${loc}</div>
+      <div class="location-stats">
+        <div class="location-stat">物资 <strong>${total}</strong> 种</div>
+        <div class="location-stat" style="color:${low>0?'#e53935':'inherit'}">预警 <strong>${low}</strong> 项</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function getColorClass(color) {
+  const map = {'黑':'color-black', '红':'color-red', '黄':'color-yellow', '蓝':'color-blue', '粉':'color-pink', '白':'color-gray'};
+  return map[color] || 'color-gray';
+}
+
+function getStockClass(qty, threshold) {
+  if (qty === 0) return 'low';
+  if (qty <= threshold) return 'warning';
+  return 'ok';
+}
+
+function getStockTag(qty, threshold) {
+  if (qty === 0) return '<span class="tag tag-red">缺货</span>';
+  if (qty <= threshold) return '<span class="tag tag-orange">偏少</span>';
+  return '<span class="tag tag-green">充足</span>';
+}
+
+// ==================== Toner Color Detection ====================
+function isColorPrinter(printerModel) {
+  if (!printerModel || printerModel === '-') return false;
+  const m = printerModel.toLowerCase();
+  const colorKeys = ['color', '彩打', '彩色', 'm180n', 'm181f', 'm277d', '281fdw',
+    '3150cdn', '3170cdw', 'p5021', 'c308', 'c368',
+    'e-studio 124', 'e-studio 224', 'p5021cdn', 'p5021cdw', 'bizhub c'];
+  return colorKeys.some(k => m.includes(k));
+}
+
+// Group toner items by printerModel only
+function groupToners(items) {
+  const groups = new Map();
+  for (const item of items) {
+    const key = item.printerModel || '未指定';
+    if (!groups.has(key)) {
+      groups.set(key, {
+        printerModel: key,
+        isColor: isColorPrinter(key),
+        entries: []
+      });
+    }
+    groups.get(key).entries.push(item);
+  }
+  const result = Array.from(groups.values());
+  // 按每组最小 sortOrder 排序（支持拖拽调整顺序）
+  result.sort((a, b) => {
+    const orderA = Math.min(...a.entries.map(e => e.sortOrder || 0));
+    const orderB = Math.min(...b.entries.map(e => e.sortOrder || 0));
+    return orderA - orderB;
+  });
+  return result;
+}
+
+function renderToner() {
+  const data = getItems();
+  const search = document.getElementById('tonerSearch').value.toLowerCase();
+  const filter = document.getElementById('tonerFilter').value;
+
+  let items = getSortedByCategory(data, '硒鼓');
+  if (search) {
+    items = items.filter(i =>
+      (i.brand||'').toLowerCase().includes(search) ||
+      (i.model||'').toLowerCase().includes(search) ||
+      (i.printerModel||'').toLowerCase().includes(search) ||
+      (i.location||'').toLowerCase().includes(search)
+    );
+  }
+  if (filter) items = items.filter(i => i.type === filter);
+
+  currentTonerGroups = groupToners(items);
+  const tbody = document.getElementById('tonerTable');
+  const rows = currentTonerGroups.map((g, idx) => buildPrinterGroupRow(g, idx));
+  tbody.innerHTML = rows.join('');
+  if (currentTonerGroups.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">未找到匹配的硒鼓</td></tr>';
+  }
+}
+
+function getTypeTagClass(type) {
+  const map = { '硒鼓': 'tag-purple', '粉盒': 'tag-blue', '废粉盒': 'tag-gray', '硒鼓架': 'tag-orange', '黑色墨粉组件': 'tag-green' };
+  return map[type] || 'tag-gray';
+}
+
+function buildColorStockRow(items, groupIdx) {
+  const colorOrder = ['红', '黄', '蓝', '黑'];
+  const colorMap = {};
+  items.forEach(i => { colorMap[i.color] = i; });
+
+  const colorCells = colorOrder.map(c => {
+    const item = colorMap[c];
+    const qty = item ? item.quantity : 0;
+    const cls = item ? getColorClass(c) : 'color-gray';
+    const hasLow = item && item.quantity <= item.threshold;
+    const itemId = item ? item.id : null;
+    return `<span class="color-item">
+      <span class="color-dot ${cls} ${hasLow ? 'color-low' : ''}"></span>
+      <span class="color-qty ${hasLow ? 'color-qty-low' : ''}">${qty}</span>
+      ${itemId ? `<span class="color-mini-btns"><button class="cmb" onclick="quickAddColor(${groupIdx},'${c}')" title="${c}色补货">+</button><button class="cmb cmb-sub" onclick="quickRemoveColor(${groupIdx},'${c}')" title="${c}色取货">-</button></span>` : ''}
+    </span>`;
+  }).join('');
+
+  return `<div class="color-grid-2x2">${colorCells}</div>`;
+}
+
+function buildBwStockRow(item) {
+  const cls = getStockClass(item.quantity, item.threshold);
+  // 硒鼓用实际颜色，粉盒/废粉盒/硒鼓架统一用灰色
+  const dotColor = item.type === '硒鼓' ? getColorClass(item.color) : 'color-gray';
+  return `<span class="color-item"><span class="color-dot ${dotColor}"></span><span class="color-qty ${cls === 'low' ? 'color-qty-low' : ''}">${item.quantity}</span><span class="color-mini-btns"><button class="cmb" onclick="quickAdd(${item.id})" title="补货">+</button><button class="cmb cmb-sub" onclick="quickRemove(${item.id})" title="取货">-</button></span></span>`;
+}
+
+function buildPrinterGroupRow(group, groupIdx) {
+  const byType = {};
+  group.entries.forEach(e => { if (!byType[e.type]) byType[e.type] = []; byType[e.type].push(e); });
+  const types = Object.keys(byType);
+
+  const typeRows = types.map(type => {
+    const items = byType[type];
+    const isMultiColor = group.isColor && type === '硒鼓' && items.length > 1;
+    if (isMultiColor) return buildColorStockRow(items, groupIdx);
+    return buildBwStockRow(items[0]);
+  });
+
+  const modelCell = types.map((type, i) => `<div class="type-row" ${i>0?'style="margin-top:8px"':''}><strong>${byType[type][0].model}</strong></div>`).join('');
+  const typeCell = types.map((type, i) => `<div class="type-row" ${i>0?'style="margin-top:8px"':''}><span class="tag ${getTypeTagClass(type)}">${type}</span></div>`).join('');
+  const stockCell = typeRows.map((html, i) => `<div class="type-row" ${i>0?'style="margin-top:8px"':''}>${html}</div>`).join('');
+
+  const rowClass = group.entries.some(e => e.quantity === 0) ? 'low-stock' :
+    (group.entries.some(e => e.quantity > 0 && e.quantity <= e.threshold) ? 'warning-stock' : '');
+
+  const printerTag = group.isColor
+    ? '<span class="printer-tag printer-color">彩打</span>'
+    : '<span class="printer-tag printer-bw">黑白</span>';
+
+  return `
+    <tr class="${rowClass} toner-group-row" draggable="true" data-group-idx="${groupIdx}">
+      <td class="drag-handle-cell"><span class="drag-handle">⋮⋮</span></td>
+      <td class="col-printer-group"><strong>${group.printerModel}</strong>${printerTag}</td>
+      <td>${modelCell}</td>
+      <td>${typeCell}</td>
+      <td>${stockCell}</td>
+      <td class="col-location">${group.entries[0].location}</td>
+      <td class="col-remark"><input class="remark-input" value="${(group.entries[0].remark||'').replace(/"/g,'&quot;')}" placeholder="点击填写" onblur="saveRemark(${group.entries[0].id},this.value)"></td>
+      <td class="col-actions" style="min-width:140px">
+        <button class="btn btn-sm btn-primary" onclick="editPrinterGroup(${groupIdx})">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deletePrinterGroup(${groupIdx})">删除</button>
+      </td>
+    </tr>`;
+}
+
+// ==================== Printer Group Actions ====================
+function quickAddColor(groupIdx, color) {
+  const group = currentTonerGroups[groupIdx];
+  if (!group) return;
+  const item = group.entries.find(i => i.type === '硒鼓' && i.color === color);
+  if (!item) return;
+  const data = getItems();
+  const found = data.find(i => i.id === item.id);
+  if (found) {
+    found.quantity += 1;
+    saveData(data);
+    showToast(`${found.model} ${color}色 +1`);
+  }
+}
+
+function quickRemoveColor(groupIdx, color) {
+  const group = currentTonerGroups[groupIdx];
+  if (!group) return;
+  const item = group.entries.find(i => i.type === '硒鼓' && i.color === color);
+  if (!item) return;
+  const data = getItems();
+  const found = data.find(i => i.id === item.id);
+  if (found && found.quantity > 0) {
+    found.quantity -= 1;
+    saveData(data);
+    showToast(`${found.model} ${color}色 -1`);
+  }
+}
+
+function editPrinterGroup(groupIdx) {
+  const group = currentTonerGroups[groupIdx];
+  if (!group) return;
+  editingGroupIdx = groupIdx;
+  document.getElementById('modalTitle').textContent = '编辑硒鼓';
+  document.getElementById('modalBody').innerHTML = buildPrinterGroupForm(group);
+  document.getElementById('modal').classList.add('active');
+}
+
+function deletePrinterGroup(groupIdx) {
+  const group = currentTonerGroups[groupIdx];
+  if (!group) return;
+  pendingDeleteType = 'printerGroup';
+  pendingDeleteId = groupIdx;
+  document.getElementById('deleteConfirmMsg').textContent = '确认删除「' + group.printerModel + '」下所有耗材？此操作不可撤销。';
+  document.getElementById('deleteConfirm').classList.add('active');
+}
+
+function buildPrinterGroupForm(group) {
+  const byType = {};
+  group.entries.forEach(e => { if (!byType[e.type]) byType[e.type] = []; byType[e.type].push(e); });
+  const types = Object.keys(byType);
+
+  const formHtml = types.map(type => {
+    const items = byType[type];
+    const isColorToner = group.isColor && type === '硒鼓' && items.length > 1;
+
+    if (isColorToner) {
+      const colorOrder = ['红', '黄', '蓝', '黑'];
+      const colorMap = {};
+      items.forEach(i => { colorMap[i.color] = i; });
+
+      return `
+        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;margin-bottom:16px;font-size:0.85rem;color:var(--text-secondary)">
+          <strong style="color:var(--text)">${group.printerModel}</strong> · ${items[0].model} · ${type}
+        </div>
+        ${colorOrder.map(c => {
+          const item = colorMap[c];
+          const qty = item ? item.quantity : 0;
+          const exists = !!item;
+          return `
+          <div class="form-group" style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+            <span class="color-dot ${getColorClass(c)}" style="width:20px;height:20px;flex-shrink:0;margin-right:0"></span>
+            <span style="width:28px;font-weight:600;flex-shrink:0">${c}</span>
+            <input type="number" class="form-input" id="pgQty_${type}_${c}" value="${qty}" min="0" style="width:100px;flex-shrink:0" placeholder="数量">
+            ${exists ? '' : '<span style="font-size:0.75rem;color:#f59e0b">(新增)</span>'}
+          </div>`;
+        }).join('')}
+      `;
+    } else {
+      const item = items[0];
+      return `
+        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;margin-bottom:16px;font-size:0.85rem;color:var(--text-secondary)">
+          <strong style="color:var(--text)">${group.printerModel}</strong> · ${item.model} · ${type}
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <span class="color-dot ${getColorClass(item.color)}" style="width:20px;height:20px;flex-shrink:0;margin-right:0"></span>
+          <span style="width:28px;font-weight:600;flex-shrink:0">${item.color}</span>
+          <input type="number" class="form-input" id="pgQty_${type}_${item.color}" value="${item.quantity}" min="0" style="width:100px;flex-shrink:0" placeholder="数量">
+        </div>
+      `;
+    }
+  }).join('');
+  return formHtml
+    + '<div class="form-group" style="margin-top:16px"><label class="form-label">备注</label><textarea class="form-input" id="pgRemark" rows="2" placeholder="可填写备注信息...">' + (group.entries[0]?.remark || '') + '</textarea></div>';
+}
+
+function savePrinterGroup() {
+  const groupIdx = editingGroupIdx;
+  if (groupIdx === null || groupIdx === undefined) return;
+  const group = currentTonerGroups[groupIdx];
+  if (!group) return;
+  const data = getItems();
+  const printerModel = group.printerModel;
+
+  const byType = {};
+  group.entries.forEach(e => { if (!byType[e.type]) byType[e.type] = []; byType[e.type].push(e); });
+
+  Object.keys(byType).forEach(type => {
+    const items = byType[type];
+    const isColorToner = group.isColor && type === '硒鼓' && items.length > 1;
+
+    if (isColorToner) {
+      const colorOrder = ['红', '黄', '蓝', '黑'];
+      colorOrder.forEach(c => {
+        const qty = parseInt(document.getElementById('pgQty_' + type + '_' + c)?.value) || 0;
+        const existing = data.find(i => i.category === '硒鼓' && i.printerModel === printerModel && i.type === type && i.color === c);
+        if (existing) {
+          existing.quantity = qty;
+        } else if (qty > 0) {
+          const sample = items[0];
+          const maxOrder = data.filter(i => i.category === '硒鼓').reduce((max, i) => Math.max(max, i.sortOrder || 0), 0);
+          data.push({
+            id: Date.now() + Math.random(),
+            category: '硒鼓',
+            brand: sample ? sample.brand : '',
+            model: sample ? sample.model : '',
+            type: type,
+            color: c,
+            quantity: qty,
+            location: sample ? sample.location : '304',
+            printerModel: printerModel,
+            threshold: sample ? sample.threshold : 3,
+            sortOrder: maxOrder + 1
+          });
+        }
+      });
+    } else {
+      const item = items[0];
+      const qty = parseInt(document.getElementById('pgQty_' + type + '_' + item.color)?.value) || 0;
+      const existing = data.find(i => i.id === item.id);
+      if (existing) existing.quantity = qty;
+    }
+  });
+
+  // 保存备注
+  const remark = document.getElementById('pgRemark')?.value?.trim() || '';
+  const firstEntry = group.entries[0];
+  if (firstEntry) {
+    const found = data.find(i => i.id === firstEntry.id);
+    if (found) found.remark = remark;
+  }
+
+  saveData(data);
+  closeModal();
+  showToast('已更新');
+  editingGroupIdx = null;
+}
+
+function renderPaper() {
+  const data = getItems();
+  const search = document.getElementById('paperSearch').value.toLowerCase();
+  const filter = document.getElementById('paperFilter').value;
+  
+  // 动态生成规格筛选选项
+  const allTypes = [...new Set(data.filter(i => i.category === '复印纸').map(i => i.type))].filter(Boolean);
+  const filterEl = document.getElementById('paperFilter');
+  filterEl.innerHTML = '<option value="">全部规格</option>' + allTypes.map(c => `<option value="${c}" ${filter===c?'selected':''}>${c}</option>`).join('');
+  
+  let items = getSortedByCategory(data, '复印纸');
+  if (search) {
+    items = items.filter(i => 
+      (i.model||'').toLowerCase().includes(search) ||
+      (i.brand||'').toLowerCase().includes(search) ||
+      (i.type||'').toLowerCase().includes(search) ||
+      (i.location||'').toLowerCase().includes(search)
+    );
+  }
+  if (filter) items = items.filter(i => i.type === filter);
+  
+  const tbody = document.getElementById('paperTable');
+  tbody.innerHTML = items.map((item, idx) => `
+    <tr class="${item.quantity <= item.threshold ? (item.quantity === 0 ? 'low-stock' : 'warning-stock') : ''}" draggable="true" data-id="${item.id}" data-cat="复印纸">
+      <td class="drag-handle-cell"><span class="drag-handle">⋮⋮</span></td>
+      <td><strong>${item.model}</strong></td>
+      <td>${item.type || '-'}</td>
+      <td>${item.brand || '-'}</td>
+      <td class="col-quantity ${getStockClass(item.quantity, item.threshold)}">${item.quantity}</td>
+      <td class="col-location">${item.location || '-'}</td>
+      <td class="col-remark"><input class="remark-input" value="${(item.remark||'').replace(/"/g,'&quot;')}" placeholder="点击填写" onblur="saveRemark(${item.id},this.value)"></td>
+      <td class="col-actions" style="min-width:160px">
+        <span class="btn-group">
+          <button class="btn btn-icon btn-add" onclick="quickAdd(${item.id})" title="补货">+</button>
+          <button class="btn btn-icon btn-sub" onclick="quickRemove(${item.id})" title="取货">-</button>
+        </span>
+        <button class="btn btn-sm btn-primary" onclick="editItem(${item.id})">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">删除</button>
+      </td>
+    </tr>
+  `).join('');
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无纸类物资，点击右上角"新增纸类"添加</td></tr>';
+  }
+}
+
+function renderFurniture() {
+  const data = getItems();
+  const search = document.getElementById('furnitureSearch').value.toLowerCase();
+  const filter = document.getElementById('furnitureFilter').value;
+  
+  // 动态生成位置筛选选项
+  const allLocs = [...new Set(data.filter(i => i.category === '家具').map(i => i.location))].filter(Boolean);
+  const filterEl = document.getElementById('furnitureFilter');
+  filterEl.innerHTML = '<option value="">全部位置</option>' + allLocs.map(c => `<option value="${c}" ${filter===c?'selected':''}>${c}</option>`).join('');
+  
+  let items = getSortedByCategory(data, '家具');
+  if (search) {
+    items = items.filter(i => 
+      (i.model||'').toLowerCase().includes(search) ||
+      (i.brand||'').toLowerCase().includes(search) ||
+      (i.type||'').toLowerCase().includes(search) ||
+      (i.location||'').toLowerCase().includes(search)
+    );
+  }
+  if (filter) items = items.filter(i => i.location === filter);
+  
+  const tbody = document.getElementById('furnitureTable');
+  tbody.innerHTML = items.map((item, idx) => `
+    <tr class="${item.quantity <= item.threshold ? (item.quantity === 0 ? 'low-stock' : 'warning-stock') : ''}" draggable="true" data-id="${item.id}" data-cat="家具">
+      <td class="drag-handle-cell"><span class="drag-handle">⋮⋮</span></td>
+      <td><strong>${item.model}</strong></td>
+      <td>${item.brand || '-'} / ${item.type || '-'}</td>
+      <td class="col-quantity ${getStockClass(item.quantity, item.threshold)}">${item.quantity}</td>
+      <td class="col-location">${item.location || '-'}</td>
+      <td class="col-remark"><input class="remark-input" value="${(item.remark||'').replace(/"/g,'&quot;')}" placeholder="点击填写" onblur="saveRemark(${item.id},this.value)"></td>
+      <td class="col-actions" style="min-width:160px">
+        <span class="btn-group">
+          <button class="btn btn-icon btn-add" onclick="quickAdd(${item.id})" title="补货">+</button>
+          <button class="btn btn-icon btn-sub" onclick="quickRemove(${item.id})" title="取货">-</button>
+        </span>
+        <button class="btn btn-sm btn-primary" onclick="editItem(${item.id})">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">删除</button>
+      </td>
+    </tr>
+  `).join('');
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无家具，点击右上角"新增家具"添加</td></tr>';
+  }
+}
+
+function renderOthers() {
+  var data = getItems();
+  var search = document.getElementById('othersSearch').value.toLowerCase();
+  var filter = document.getElementById('othersFilter').value;
+  var explicitCats = getExplicitCategories();
+
+  // 动态生成分类筛选选项：排除导航中已明确列出的分类
+  var allCats = [];
+  data.forEach(function(i) {
+    if (explicitCats.indexOf(i.category) < 0 && allCats.indexOf(i.category) < 0 && i.category) {
+      allCats.push(i.category);
+    }
+  });
+  var filterEl = document.getElementById('othersFilter');
+  filterEl.innerHTML = '<option value="">全部分类</option>' + allCats.map(function(c) { return '<option value="' + c + '"' + (filter===c?' selected':'') + '>' + c + '</option>'; }).join('');
+
+  var items = data.filter(function(i) { return explicitCats.indexOf(i.category) < 0; });
+  // 保持各类别内部排序
+  items.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  if (search) {
+    items = items.filter(i => 
+      (i.model||'').toLowerCase().includes(search) ||
+      (i.brand||'').toLowerCase().includes(search) ||
+      (i.category||'').toLowerCase().includes(search) ||
+      (i.location||'').toLowerCase().includes(search)
+    );
+  }
+  if (filter) items = items.filter(i => i.category === filter);
+  
+  const catColors = {};
+  const pallete = ['tag-blue','tag-green','tag-orange','tag-purple','tag-red','tag-gray'];
+  allCats.forEach((c,i) => { catColors[c] = pallete[i % pallete.length]; });
+  
+  const tbody = document.getElementById('othersTable');
+  tbody.innerHTML = items.map((item, idx) => `
+    <tr class="${item.quantity <= item.threshold ? (item.quantity === 0 ? 'low-stock' : 'warning-stock') : ''}" draggable="true" data-id="${item.id}" data-cat="${item.category}">
+      <td class="drag-handle-cell"><span class="drag-handle">⋮⋮</span></td>
+      <td><strong>${item.model}</strong></td>
+      <td style="min-width:80px"><span class="tag ${catColors[item.category] || 'tag-gray'}">${item.category}</span></td>
+      <td>${item.type || '-'}</td>
+      <td class="col-quantity ${getStockClass(item.quantity, item.threshold)}">${item.quantity}</td>
+      <td class="col-location">${item.location || '-'}</td>
+      <td class="col-remark"><input class="remark-input" value="${(item.remark||'').replace(/"/g,'&quot;')}" placeholder="点击填写" onblur="saveRemark(${item.id},this.value)"></td>
+      <td class="col-actions" style="min-width:160px">
+        <span class="btn-group">
+          <button class="btn btn-icon btn-add" onclick="quickAdd(${item.id})" title="补货">+</button>
+          <button class="btn btn-icon btn-sub" onclick="quickRemove(${item.id})" title="取货">-</button>
+        </span>
+        <button class="btn btn-sm btn-primary" onclick="editItem(${item.id})">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">删除</button>
+      </td>
+    </tr>
+  `).join('');
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">暂无其他物资，点击右上角"新增物资"添加</td></tr>';
+  }
+}
+
+// ==================== Tabs ====================
+function switchTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.module').forEach(function(m) { m.classList.remove('active'); });
+  var targetNav = document.querySelector('.nav-item[data-tab="' + tab + '"]');
+  if (targetNav) targetNav.classList.add('active');
+  // 确保动态模块存在
+  ensureModule(tab);
+  var targetModule = document.getElementById(tab);
+  if (targetModule) {
+    targetModule.classList.add('active');
+  }
+  // 渲染对应内容
+  renderAll();
+}
+
+// ==================== Modal ====================
+function openModal(presetCategory) {
+  editingId = null;
+  editingGroupIdx = null;
+  document.getElementById('modalTitle').textContent = '新增物资';
+  document.getElementById('modalBody').innerHTML = buildForm(null, presetCategory);
+  document.getElementById('modal').classList.add('active');
+}
+
+function editItem(id) {
+  const data = getItems();
+  const item = data.find(i => i.id === id);
+  if (!item) return;
+  editingId = id;
+  editingGroupIdx = null;
+  document.getElementById('modalTitle').textContent = '编辑物资';
+  document.getElementById('modalBody').innerHTML = buildForm(item);
+  document.getElementById('modal').classList.add('active');
+}
+
+function buildForm(item, presetCategory) {
+  const cat = item?.category || presetCategory || '';
+  const values = {
+    category: cat,
+    brand: item?.brand || '',
+    model: item?.model || '',
+    type: item?.type || '',
+    color: item?.color || '-',
+    quantity: item?.quantity ?? 0,
+    location: item?.location || '',
+    printerModel: item?.printerModel || '',
+    threshold: item?.threshold ?? 5,
+    remark: item?.remark || ''
+  };
+
+  // Build category suggestions from existing data
+  const cats = [...new Set(getItems().map(i => i.category))].filter(Boolean);
+  const catOptions = cats.map(c => `<option value="${c}">`).join('');
+  
+  return `
+    <div class="form-group">
+      <label class="form-label">类目 <span style="color:#e53935">*</span></label>
+      <input type="text" class="form-input" id="fCategory" value="${values.category}" placeholder="如：硒鼓、复印纸、纸巾、文具..." list="categoryList" autocomplete="off">
+      <datalist id="categoryList">${catOptions}</datalist>
+    </div>
+    <div class="form-group">
+      <label class="form-label">名称/型号 <span style="color:#e53935">*</span></label>
+      <input type="text" class="form-input" id="fModel" value="${values.model}" placeholder="如：80A CF280A / A4复印纸（70g）">
+    </div>
+    <div class="form-group">
+      <label class="form-label">品牌</label>
+      <input type="text" class="form-input" id="fBrand" value="${values.brand}" placeholder="如：惠普 / 得力 / 心相印">
+    </div>
+    <div class="form-group">
+      <label class="form-label">规格/说明</label>
+      <input type="text" class="form-input" id="fType" value="${values.type}" placeholder="如：硒鼓 / 废粉盒 / 500张/包">
+    </div>
+    <div class="form-group">
+      <label class="form-label">数量 <span style="color:#e53935">*</span></label>
+      <input type="number" class="form-input" id="fQuantity" value="${values.quantity}" min="0">
+    </div>
+    <div class="form-group">
+      <label class="form-label">存放地点</label>
+      <input type="text" class="form-input" id="fLocation" value="${values.location}" placeholder="如：304 / 102">
+    </div>
+    <div class="form-group">
+      <label class="form-label">预警阈值（低于此数量标红）</label>
+      <input type="number" class="form-input" id="fThreshold" value="${values.threshold}" min="0">
+    </div>
+    <div class="form-group">
+      <label class="form-label">备注</label>
+      <textarea class="form-input" id="fRemark" rows="2" placeholder="可填写备注信息...">${values.remark}</textarea>
+    </div>
+  `;
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+  editingId = null;
+  editingGroupIdx = null;
+}
+
+function saveItem() {
+  // If editing a printer group, delegate to savePrinterGroup
+  if (editingGroupIdx !== null && editingGroupIdx !== undefined) {
+    savePrinterGroup();
+    return;
+  }
+
+  const newItem = {
+    id: editingId || (Date.now()),
+    category: document.getElementById('fCategory').value.trim(),
+    brand: document.getElementById('fBrand').value.trim(),
+    model: document.getElementById('fModel').value.trim(),
+    type: document.getElementById('fType').value.trim(),
+    color: '-',
+    quantity: parseInt(document.getElementById('fQuantity').value) || 0,
+    location: document.getElementById('fLocation').value.trim(),
+    printerModel: '-',
+    threshold: parseInt(document.getElementById('fThreshold').value) || 5,
+    remark: document.getElementById('fRemark')?.value?.trim() || ''
+  };
+  
+  if (!newItem.category) { showToast('请填写类目'); return; }
+  if (!newItem.model) { showToast('请填写名称/型号'); return; }
+  
+  const data = getItems();
+  if (editingId) {
+    const idx = data.findIndex(i => i.id === editingId);
+    if (idx >= 0) {
+      newItem.color = data[idx].color;
+      newItem.printerModel = data[idx].printerModel;
+      newItem.sortOrder = data[idx].sortOrder;
+      data[idx] = newItem;
+    }
+  } else {
+    // 给新项分配同类别最大sortOrder+1
+    const sameCat = data.filter(i => i.category === newItem.category);
+    const maxOrder = sameCat.reduce((max, i) => Math.max(max, i.sortOrder || 0), 0);
+    newItem.sortOrder = maxOrder + 1;
+    data.push(newItem);
+  }
+  
+  saveData(data);
+  closeModal();
+  showToast(editingId ? '已更新' : '已添加');
+}
+
+function deleteItem(id) {
+  pendingDeleteType = 'item';
+  pendingDeleteId = id;
+  document.getElementById('deleteConfirmMsg').textContent = '确认删除此物资？';
+  document.getElementById('deleteConfirm').classList.add('active');
+}
+
+function quickAdd(id) {
+  const data = getItems();
+  const item = data.find(i => i.id === id);
+  if (item) {
+    item.quantity += 1;
+    saveData(data);
+    showToast(`${item.model} 库存 +1`);
+  }
+}
+
+function quickRemove(id) {
+  const data = getItems();
+  const item = data.find(i => i.id === id);
+  if (item && item.quantity > 0) {
+    item.quantity -= 1;
+    saveData(data);
+    showToast(`${item.model} 库存 -1`);
+  }
+}
+
+// ==================== Import / Export ====================
+function exportData() {
+  const data = getItems();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `党政办物资库存_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('备份已导出');
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (Array.isArray(data)) {
+        saveData(data);
+        showToast('数据已恢复');
+      } else {
+        showToast('文件格式错误');
+      }
+    } catch(err) {
+      showToast('无法解析文件');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function showClearConfirm() {
+  document.getElementById('clearConfirm').classList.add('active');
+}
+
+function closeClearConfirm() {
+  document.getElementById('clearConfirm').classList.remove('active');
+}
+
+function clearAllData() {
+  appData = [];
+  syncData();
+  closeClearConfirm();
+  renderAll();
+  showToast('数据已清空');
+}
+
+// ==================== Delete Confirm ====================
+function closeDeleteConfirm() {
+  document.getElementById('deleteConfirm').classList.remove('active');
+  pendingDeleteType = null;
+  pendingDeleteId = null;
+}
+
+function confirmDelete() {
+  if (pendingDeleteType === 'item') {
+    const data = getItems().filter(function(i) { return i.id !== pendingDeleteId; });
+    saveData(data);
+    showToast('已删除');
+  } else if (pendingDeleteType === 'printerGroup') {
+    const group = currentTonerGroups[pendingDeleteId];
+    if (group) {
+      const data = getItems();
+      const ids = {};
+      group.entries.forEach(function(e) { ids[e.id] = true; });
+      const filtered = data.filter(function(i) { return !ids[i.id]; });
+      saveData(filtered);
+      showToast('已删除');
+    }
+  }
+  closeDeleteConfirm();
+}
+
+// ==================== Utils ====================
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ==================== Init ====================
+// Web 版初始化：先检查登录状态，再加载数据
+
+async function initApp() {
+  try {
+    // 检查登录状态
+    const res = await fetch('/api/session');
+    const session = await res.json();
+    if (!session.authenticated) {
+      showLoginScreen();
+      return;
+    }
+    // 已登录，加载用户信息
+    currentUser = session;
+    updateUserDisplay();
+
+    // 加载数据
+    const [itemsRes, navRes] = await Promise.all([
+      fetch('/api/items'),
+      fetch('/api/nav-config')
+    ]);
+    appData = await itemsRes.json();
+    appNavConfig = await navRes.json();
+
+    // 隐藏登录页，显示工作台
+    document.getElementById('loginScreen').classList.add('hidden');
+
+    // 初始化界面
+    renderSidebar();
+    ensureAllModules();
+    setupDragDrop();
+    renderAll();
+
+    // 启动自动刷新（每30秒从服务器拉取最新数据）
+    refreshTimer = setInterval(refreshFromServer, 30000);
+
+  } catch(err) {
+    console.error('Init error:', err);
+    showLoginScreen();
+  }
+}
+
+function showLoginScreen() {
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginUsername').focus();
+}
+
+function updateUserDisplay() {
+  if (!currentUser) return;
+  document.getElementById('sidebarUser').style.display = 'block';
+  document.getElementById('sidebarUserName').textContent = currentUser.displayName || currentUser.username;
+  document.getElementById('sidebarUserRole').textContent = currentUser.role === 'admin' ? '管理员' : '普通用户';
+  document.getElementById('sidebarUserAvatar').textContent = (currentUser.displayName || currentUser.username || 'U').charAt(0).toUpperCase();
+  if (currentUser.role === 'admin') {
+    document.getElementById('btnUserMgr').style.display = 'block';
+  }
+}
+
+// ==================== Auth ====================
+async function doLogin() {
+  var username = document.getElementById('loginUsername').value.trim();
+  var password = document.getElementById('loginPassword').value;
+  var errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+
+  if (!username || !password) {
+    errEl.textContent = '请输入用户名和密码';
+    return;
+  }
+
+  try {
+    var res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username, password: password })
+    });
+    var result = await res.json();
+    if (res.ok) {
+      currentUser = result;
+      // 加载数据并初始化
+      const [itemsRes, navRes] = await Promise.all([
+        fetch('/api/items'),
+        fetch('/api/nav-config')
+      ]);
+      appData = await itemsRes.json();
+      appNavConfig = await navRes.json();
+
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('loginPassword').value = '';
+
+      updateUserDisplay();
+      renderSidebar();
+      ensureAllModules();
+      setupDragDrop();
+      renderAll();
+
+      refreshTimer = setInterval(refreshFromServer, 30000);
+      showToast('登录成功，欢迎' + (currentUser.displayName || currentUser.username));
+    } else {
+      errEl.textContent = result.error || '登录失败';
+    }
+  } catch(err) {
+    errEl.textContent = '网络错误，请检查服务是否运行';
+  }
+}
+
+async function doLogout() {
+  if (!confirm('确认退出登录？')) return;
+  await fetch('/api/logout', { method: 'POST' });
+  currentUser = null;
+  appData = null;
+  appNavConfig = null;
+  if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+  document.getElementById('sidebarUser').style.display = 'none';
+  document.getElementById('btnUserMgr').style.display = 'none';
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  showToast('已退出登录');
+}
+
+// ==================== Change Password ====================
+function openPwdModal() {
+  document.getElementById('pwdOld').value = '';
+  document.getElementById('pwdNew').value = '';
+  document.getElementById('pwdNew2').value = '';
+  document.getElementById('pwdError').textContent = '';
+  document.getElementById('pwdModal').classList.add('active');
+  document.getElementById('pwdOld').focus();
+}
+
+function closePwdModal() {
+  document.getElementById('pwdModal').classList.remove('active');
+}
+
+async function savePwd() {
+  const oldPassword = document.getElementById('pwdOld').value.trim();
+  const newPassword = document.getElementById('pwdNew').value.trim();
+  const newPassword2 = document.getElementById('pwdNew2').value.trim();
+  const errEl = document.getElementById('pwdError');
+
+  if (!oldPassword || !newPassword) {
+    errEl.textContent = '请输入原密码和新密码';
+    return;
+  }
+  if (newPassword.length < 4) {
+    errEl.textContent = '新密码至少4位';
+    return;
+  }
+  if (newPassword !== newPassword2) {
+    errEl.textContent = '两次输入的新密码不一致';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/me/password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oldPassword, newPassword })
+    });
+    const result = await res.json();
+    if (res.ok) {
+      closePwdModal();
+      showToast('密码修改成功，请重新登录');
+      await doLogout();
+    } else {
+      errEl.textContent = result.error || '修改失败';
+    }
+  } catch (err) {
+    errEl.textContent = '网络错误，请稍后重试';
+  }
+}
+
+// ==================== User Management ====================
+var userList = [];
+
+async function openUserMgr() {
+  document.getElementById('userMgrModal').classList.add('active');
+  await loadUserList();
+}
+
+function closeUserMgr() {
+  document.getElementById('userMgrModal').classList.remove('active');
+}
+
+async function loadUserList() {
+  try {
+    var res = await fetch('/api/users');
+    if (res.ok) {
+      userList = await res.json();
+      renderUserList();
+    }
+  } catch(err) {
+    console.error('Load users error:', err);
+  }
+}
+
+function renderUserList() {
+  var list = document.getElementById('userMgrList');
+  list.innerHTML = userList.map(function(u) {
+    var isAdmin = u.role === 'admin';
+    var isSelf = currentUser && u.username === currentUser.username;
+    var avatar = (u.displayName || u.username || 'U').charAt(0).toUpperCase();
+    return '<div class="user-mgr-item">'
+      + '<div class="user-avatar">' + avatar + '</div>'
+      + '<div class="user-info">'
+      + '<div class="user-name">' + u.displayName + (isSelf ? ' (我)' : '') + '</div>'
+      + '<div class="user-role' + (isAdmin ? ' admin' : '') + '">' + (isAdmin ? '管理员' : '普通用户') + ' · ' + u.username + '</div>'
+      + '</div>'
+      + '<div class="user-actions">'
+      + '<button class="btn btn-sm" style="background:#f1f5f9;color:var(--text);border:1px solid var(--border)" onclick="resetUserPassword(' + u.id + ',\'' + u.username + '\')">重置密码</button>'
+      + (isSelf ? '' : '<button class="btn btn-sm btn-danger" onclick="deleteUser(' + u.id + ',\'' + u.username + '\')">删除</button>')
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+async function addUser() {
+  var username = document.getElementById('newUserUsername').value.trim();
+  var displayName = document.getElementById('newUserDisplayName').value.trim();
+  var password = document.getElementById('newUserPassword').value;
+  var role = document.getElementById('newUserRole').value;
+
+  if (!username) { showToast('请输入用户名'); return; }
+  if (!password) { showToast('请输入密码'); return; }
+
+  try {
+    var res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username, displayName: displayName, password: password, role: role })
+    });
+    var result = await res.json();
+    if (res.ok) {
+      showToast('用户已添加');
+      document.getElementById('newUserUsername').value = '';
+      document.getElementById('newUserDisplayName').value = '';
+      document.getElementById('newUserPassword').value = '';
+      await loadUserList();
+    } else {
+      showToast(result.error || '添加失败');
+    }
+  } catch(err) {
+    showToast('网络错误');
+  }
+}
+
+async function deleteUser(id, username) {
+  if (!confirm('确认删除用户「' + username + '」？')) return;
+  try {
+    var res = await fetch('/api/users/' + id, { method: 'DELETE' });
+    var result = await res.json();
+    if (res.ok) {
+      showToast('已删除');
+      await loadUserList();
+    } else {
+      showToast(result.error || '删除失败');
+    }
+  } catch(err) {
+    showToast('网络错误');
+  }
+}
+
+async function resetUserPassword(id, username) {
+  var newPw = prompt('为「' + username + '」设置新密码：');
+  if (!newPw) return;
+  if (newPw.length < 4) { showToast('密码至少4位'); return; }
+  try {
+    var res = await fetch('/api/users/' + id + '/password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: newPw })
+    });
+    var result = await res.json();
+    if (res.ok) {
+      showToast('密码已重置');
+    } else {
+      showToast(result.error || '重置失败');
+    }
+  } catch(err) {
+    showToast('网络错误');
+  }
+}
+
+// ==================== Start ====================
+initApp();
+</script>
+</body>
+</html>
