@@ -2391,6 +2391,16 @@ function buildForm(item, presetCategory) {
   // Build category suggestions from existing data
   const cats = [...new Set(getItems().map(i => i.category))].filter(Boolean);
   const catOptions = cats.map(c => `<option value="${c}">`).join('');
+
+  // Build printer-model suggestions from existing data
+  const pms = [...new Set(getItems().map(i => i.printerModel).filter(p => p && p !== '-'))];
+  const pmOptions = pms.map(p => `<option value="${p.replace(/"/g,'&quot;')}">`).join('');
+
+  // Color options
+  const colorList = ['-', '黑', '红', '黄', '蓝', '粉', '白', '青'];
+  const colorOptions = colorList.map(c =>
+    `<option value="${c}"${(values.color || '-') === c ? ' selected' : ''}>${c === '-' ? '无 / 不适用' : c}</option>`
+  ).join('');
   
   return `
     <div class="form-group">
@@ -2405,6 +2415,15 @@ function buildForm(item, presetCategory) {
     <div class="form-group">
       <label class="form-label">品牌</label>
       <input type="text" class="form-input" id="fBrand" value="${values.brand}" placeholder="如：惠普 / 得力 / 心相印">
+    </div>
+    <div class="form-group">
+      <label class="form-label">适用打印机型号</label>
+      <input type="text" class="form-input" id="fPrinterModel" value="${(values.printerModel === '-' ? '' : values.printerModel).replace(/"/g,'&quot;')}" placeholder="如：HP LaserJet Pro 400 M401/M425" list="printerModelList" autocomplete="off">
+      <datalist id="printerModelList">${pmOptions}</datalist>
+    </div>
+    <div class="form-group">
+      <label class="form-label">颜色</label>
+      <select class="form-input" id="fColor">${colorOptions}</select>
     </div>
     <div class="form-group">
       <label class="form-label">规格/说明</label>
@@ -2448,10 +2467,10 @@ function saveItem() {
     brand: document.getElementById('fBrand').value.trim(),
     model: document.getElementById('fModel').value.trim(),
     type: document.getElementById('fType').value.trim(),
-    color: '-',
+    color: document.getElementById('fColor')?.value || '-',
     quantity: parseInt(document.getElementById('fQuantity').value) || 0,
     location: document.getElementById('fLocation').value.trim(),
-    printerModel: '-',
+    printerModel: document.getElementById('fPrinterModel')?.value?.trim() || '-',
     threshold: parseInt(document.getElementById('fThreshold').value) || 5,
     remark: document.getElementById('fRemark')?.value?.trim() || ''
   };
@@ -2463,8 +2482,6 @@ function saveItem() {
   if (editingId) {
     const idx = data.findIndex(i => i.id === editingId);
     if (idx >= 0) {
-      newItem.color = data[idx].color;
-      newItem.printerModel = data[idx].printerModel;
       newItem.sortOrder = data[idx].sortOrder;
       data[idx] = newItem;
     }
