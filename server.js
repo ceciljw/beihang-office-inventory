@@ -33,6 +33,7 @@ const defaultItems = [
   {id:1, category:'硒鼓', brand:'惠普 莱盛 格之格', model:'80A CF280A', type:'硒鼓', color:'黑', quantity:2, location:'304', printerModel:'HP LaserJet Pro 400 M401/M425', threshold:3, sortOrder:1, remark:''},
   {id:2, category:'硒鼓', brand:'惠普 莱盛 格之格', model:'80A CF280A', type:'粉盒', color:'黑', quantity:7, location:'304', printerModel:'HP LaserJet Pro 400 M401/M425', threshold:3, sortOrder:2, remark:''},
   {id:3, category:'硒鼓', brand:'惠普-盈佳', model:'88A CC388A', type:'硒鼓', color:'黑', quantity:1, location:'304', printerModel:'HP LaserJet P1106/P1108/M1136/M1213nf', threshold:2, sortOrder:3, remark:''},
+  {id:42, category:'硒鼓', brand:'默远', model:'CF230A', type:'硒鼓', color:'黑', quantity:5, location:'304', printerModel:'HP LaserJet Pro MFP M227fdw', threshold:2, sortOrder:2, remark:''},
   {id:4, category:'硒鼓', brand:'格之格 惠普 默远（217彩打）', model:'202A/CF500/501/502/503A', type:'硒鼓', color:'红', quantity:3, location:'304', printerModel:'HP Color LaserJet Pro MFP 281fdw', threshold:3, sortOrder:4, remark:''},
   {id:5, category:'硒鼓', brand:'格之格 惠普 默远（217彩打）', model:'202A/CF500/501/502/503A', type:'硒鼓', color:'黄', quantity:2, location:'304', printerModel:'HP Color LaserJet Pro MFP 281fdw', threshold:3, sortOrder:5, remark:''},
   {id:6, category:'硒鼓', brand:'格之格 惠普 默远（217彩打）', model:'202A/CF500/501/502/503A', type:'硒鼓', color:'蓝', quantity:3, location:'304', printerModel:'HP Color LaserJet Pro MFP 281fdw', threshold:3, sortOrder:6, remark:''},
