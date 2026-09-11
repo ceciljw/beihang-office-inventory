@@ -2443,7 +2443,7 @@ function saveItem() {
   }
 
   const newItem = {
-    id: editingId || (Date.now()),
+    id: editingId || (getItems().reduce((max, i) => Math.max(max, Number(i.id) || 0), 0) + 1),
     category: document.getElementById('fCategory').value.trim(),
     brand: document.getElementById('fBrand').value.trim(),
     model: document.getElementById('fModel').value.trim(),
